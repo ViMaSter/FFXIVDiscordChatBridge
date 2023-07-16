@@ -36,8 +36,10 @@ You need:
 7. Under `Integrations` create a new Webhook and click the `Copy Webhook URL` button  
    ![image](https://i.vimaster.de/direct/ffxiv-webhook.png)  
    Replace future occurrences of `<discordWebhookURL>` with the copied URL
-8. Based on the Final Fantasy XIV channel you want the bot to use, [select the corresponding ID from this page](https://gist.github.com/quisquous/1a6ea3cf102c65e3c375186f1173dff3#file-ffxiv-game-log-ids)    
-   For example: If you want your bot to read messages from linkshell #1, use `0010`, for your Free Company chat use `0018`, etc.    
+8. Based on the Final Fantasy XIV channel you want the bot to use, [select the corresponding ID from this page](https://gist.github.com/quisquous/1a6ea3cf102c65e3c375186f1173dff3#file-ffxiv-game-log-ids)  
+   Example:
+   - If you want your bot to read messages [from linkshell #1, use `0010`](https://gist.github.com/quisquous/1a6ea3cf102c65e3c375186f1173dff3#file-ffxiv-game-log-ids-L8)
+   - If you want your bot to read messages [from your Free Company chat use `0018`](https://gist.github.com/quisquous/1a6ea3cf102c65e3c375186f1173dff3#file-ffxiv-game-log-ids-L16)
    Replace future occurrences of `<ffxivChannelCode>` with this ID
 9. Download [the latest release](https://github.com/ViMaSter/FFXIVDiscordChatBridge/releases)
 10. Run FFXIV using DirectX11 on Windows (DirectX9 and other platforms are not supported) in windowed mode
