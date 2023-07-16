@@ -9,11 +9,10 @@ namespace FFXIVDiscordChatBridge.Consumer;
 internal class Discord
 {
     private readonly string _discordChannelId;
-    private readonly Logger _logger;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     public Discord(DiscordClientWrapper discordWrapper)
     {
-        _logger = LogManager.GetCurrentClassLogger();
         _discordChannelId = discordWrapper.Channel.Id.ToString();
         discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
     }

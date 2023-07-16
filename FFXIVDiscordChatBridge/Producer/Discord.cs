@@ -11,12 +11,11 @@ class DiscordClientWrapper
 
     private readonly string _discordToken;
     private readonly string _discordChannelId;
-    private readonly Logger _logger;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     public IMessageChannel Channel;
 
     public DiscordClientWrapper(string discordToken, string discordChannelId)
     {
-        _logger = LogManager.GetCurrentClassLogger();
         
         _discordToken = discordToken;
         _discordChannelId = discordChannelId;
@@ -60,11 +59,10 @@ class DiscordClientWrapper
 internal class Discord
 {
     private readonly IMessageChannel _channel;
-    private readonly Logger _logger;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     public Discord(DiscordClientWrapper wrapper)
     {
-        _logger = LogManager.GetCurrentClassLogger();
         _channel = wrapper.Channel;
     }
     

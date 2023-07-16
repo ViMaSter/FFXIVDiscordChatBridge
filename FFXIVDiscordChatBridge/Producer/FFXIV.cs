@@ -6,15 +6,13 @@ namespace FFXIVDiscordChatBridge.Producer;
 
 class FFXIV
 {
-    private readonly Logger _logger;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     [DllImport ("User32.dll")]
     static extern int SetForegroundWindow(IntPtr point);
         
     public FFXIV()
     {
-        _logger = LogManager.GetCurrentClassLogger();
-        
         var ffxivProcess = Process.GetProcessesByName("ffxiv").FirstOrDefault();
         if (ffxivProcess == null)
         {
