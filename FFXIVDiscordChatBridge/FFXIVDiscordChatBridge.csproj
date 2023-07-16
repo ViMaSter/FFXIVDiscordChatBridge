@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Discord.Net" Version="3.11.0" />
       <PackageReference Include="Sharlayan" Version="7.0.1" />
     </ItemGroup>
 
