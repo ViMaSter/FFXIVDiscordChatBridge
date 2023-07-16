@@ -6,7 +6,7 @@ Connect a Discord channel and FFXIV in-game chat channel
 1. [Create a Discord application with "Bot" functionality](https://discord.com/developers/applications)
 2. Generate/reset and copy the bot token
    ![image](https://i.vimaster.de/direct/chrome_wTwAcZZDxd.png)
-   Replace future occurrences of `<discordToken>` with the copied ID
+   Replace future occurrences of `<discordToken>` with the copied token
 3. Inside Discord, open the settings, open the `Advanced` section and enable Discord Developer Mode
    ![image](https://i.vimaster.de/direct/Discord_rpRIBHtEjm.png)
 4. Close the settings and right-click on the Discord channel you want to connect your bot to and click on `Copy channel ID`  
