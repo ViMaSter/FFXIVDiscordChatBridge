@@ -1,6 +1,4 @@
-using Discord;
 using Discord.WebSocket;
-using FFXIVDiscordChatBridge.Extensions;
 using FFXIVDiscordChatBridge.Producer;
 using NLog;
 
@@ -13,7 +11,7 @@ internal class Discord
 
     public Discord(DiscordClientWrapper discordWrapper)
     {
-        _discordChannelId = discordWrapper.Channel.Id.ToString();
+        _discordChannelId = discordWrapper.Channel!.Id.ToString();
         discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
     }
     

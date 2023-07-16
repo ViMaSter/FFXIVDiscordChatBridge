@@ -1,24 +1,18 @@
-using FFXIVDiscordChatBridge.Consumer;
 using FFXIVDiscordChatBridge.Producer;
 using NLog;
-using NLog.Fluent;
 
 namespace FFXIVDiscordChatBridge
 {
     static class Program
     {
-        private static string DiscordChannelID;
-        private static string DiscordToken;
-
-        private static Logger logger;
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         [STAThread]
         static async Task Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(AppDomain_CurrentDomain_UnhandledException);
+            AppDomain.CurrentDomain.UnhandledException += AppDomain_CurrentDomain_UnhandledException;
 
-            logger = LogManager.GetCurrentClassLogger();
-            logger.Info("Starting FFXIVDiscordChatBridge");
+            Logger.Info("Starting FFXIVDiscordChatBridge");
         
             var args = Environment.GetCommandLineArgs();
             var parameters = args
@@ -34,11 +28,17 @@ namespace FFXIVDiscordChatBridge
             {
                 throw new Exception("Missing --discordToken parameter");
             }
-            DiscordChannelID = parameters["--discordChannelID"];
-            DiscordToken = parameters["--discordToken"];
+            if (!parameters.ContainsKey("--ffxivChannelCode"))
+            {
+                throw new Exception("Missing --ffxivChannelCode parameter");
+            }
+            var discordChannelId = parameters["--discordChannelID"];
+            var discordToken = parameters["--discordToken"];
+            
+            var ffxivChannelCode = parameters["--ffxivChannelCode"];
 
             // setup discord singleton
-            var discordWrapper = new DiscordClientWrapper(DiscordToken, DiscordChannelID);
+            var discordWrapper = new DiscordClientWrapper(discordToken, discordChannelId);
             await discordWrapper.Initialize();
             
             // setup producers
@@ -46,7 +46,7 @@ namespace FFXIVDiscordChatBridge
             var discordProducer = new Producer.Discord(discordWrapper);
         
             // setup consumers            
-            var ffxivConsumer = new Consumer.FFXIV(async (message) =>
+            var ffxivConsumer = new Consumer.FFXIV(ffxivChannelCode, async (message) =>
             {
                 await discordProducer.Send(message);
             });
@@ -60,7 +60,7 @@ namespace FFXIVDiscordChatBridge
     
         static void AppDomain_CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            logger.Error(e.ExceptionObject);
+            Logger.Error(e.ExceptionObject);
         }
     }
 }

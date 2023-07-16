@@ -4,7 +4,7 @@ using NLog;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-class FFXIV
+internal class FFXIV
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -33,7 +33,7 @@ class FFXIV
         
     public async Task Send(string message)
     {
-        _logger.Info("Sending message to FFXIV: {message}", message);
+        _logger.Info("Sending message to FFXIV: {Message}", message);
         SendKeys.SendWait("~");
         await Task.Delay(200);
         SendKeys.SendWait(message);

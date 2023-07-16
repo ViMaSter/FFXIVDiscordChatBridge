@@ -5,18 +5,17 @@ using NLog;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-class DiscordClientWrapper
+internal class DiscordClientWrapper
 {
     public readonly DiscordSocketClient Client;
 
     private readonly string _discordToken;
     private readonly string _discordChannelId;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public IMessageChannel Channel;
+    public IMessageChannel? Channel;
 
     public DiscordClientWrapper(string discordToken, string discordChannelId)
     {
-        
         _discordToken = discordToken;
         _discordChannelId = discordChannelId;
 
@@ -63,7 +62,7 @@ internal class Discord
 
     public Discord(DiscordClientWrapper wrapper)
     {
-        _channel = wrapper.Channel;
+        _channel = wrapper.Channel!;
     }
     
     public async Task Send(string content)

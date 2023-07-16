@@ -13,7 +13,9 @@ public class FFXIVByteHandler
     public FFXIVByteHandler(string chatChannelCode, string playerName, string worldName)
     {
         _chatChatChannelCode = chatChannelCode;
+        _logger.Debug($"Chat channel code: {chatChannelCode}");
         _currentCharacter = new Character(playerName, worldName);
+        _logger.Debug($"Current character: {playerName}@{worldName}");
     }
 
     private static byte[][] Split(byte[] input, byte separator, bool ignoreEmptyEntries = false)

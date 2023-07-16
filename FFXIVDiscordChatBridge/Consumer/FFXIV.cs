@@ -11,18 +11,18 @@ namespace FFXIVDiscordChatBridge.Consumer;
 
 public class FFXIV : IDisposable
 {
+    private readonly string _channelCode;
     private MemoryHandler? _memoryHandler;
     private int _previousArrayIndex;
     private int _previousOffset;
-    private int _currentChatLine = -1;
-    private Task? _scan;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private FFXIVByteHandler _handler;
 
     public delegate Task OnNewChatMessageDelegate(string message);
     
-    public FFXIV(OnNewChatMessageDelegate onNewChatMessage)
-    {        
+    public FFXIV(string channelCode,OnNewChatMessageDelegate onNewChatMessage)
+    {
+        _channelCode = channelCode;
         OnNewChatMessage = onNewChatMessage;
     }
 
@@ -54,7 +54,7 @@ public class FFXIV : IDisposable
 
         _logger.Debug(@"Scanning memory..");
         var startedAt = DateTime.Now;
-        while (!_memoryHandler.Scanner.Locations.ContainsKey("CHATLOG"))
+        while (!(_memoryHandler.Scanner.Locations.ContainsKey("CHATLOG") && _memoryHandler.Scanner.Locations.ContainsKey("PLAYERINFO")))
         {
             Thread.Sleep(250);
             if (DateTime.Now - startedAt > TimeSpan.FromSeconds(30))
@@ -85,7 +85,7 @@ public class FFXIV : IDisposable
             throw new Exception("Can't read current player");
         }
 
-        _handler = new FFXIVByteHandler(WATCHED_CHANNEL,getCurrentPlayer.Entity.Name, "Zalera");
+        _handler = new FFXIVByteHandler(_channelCode,getCurrentPlayer.Entity.Name, "Zalera");
 
         _logger.Info($"Player name: {getCurrentPlayer.Entity.Name}");
 
@@ -94,8 +94,7 @@ public class FFXIV : IDisposable
         return ScanForNewMessages();
     }
 
-    private const string WATCHED_CHANNEL = "";
-    
+    // ReSharper disable once FunctionNeverReturns - this is intentional as it loops over messages
     private async Task ScanForNewMessages()
     {
         while (true)
@@ -148,6 +147,5 @@ public class FFXIV : IDisposable
     public void Dispose()
     {
         _memoryHandler?.Dispose();
-        _scan?.Dispose();
     }
 }
