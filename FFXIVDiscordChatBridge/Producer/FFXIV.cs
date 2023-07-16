@@ -1,15 +1,20 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using NLog;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-class FFXIV : WithLogger
+class FFXIV
 {
+    private readonly Logger _logger;
+
     [DllImport ("User32.dll")]
     static extern int SetForegroundWindow(IntPtr point);
         
     public FFXIV()
     {
+        _logger = LogManager.GetCurrentClassLogger();
+        
         var ffxivProcess = Process.GetProcessesByName("ffxiv").FirstOrDefault();
         if (ffxivProcess == null)
         {

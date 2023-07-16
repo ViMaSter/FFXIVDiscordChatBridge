@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using NLog;
 using Sharlayan;
 using Sharlayan.Core;
 using Sharlayan.Enums;
@@ -7,22 +8,27 @@ using Sharlayan.Models;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
-public class FFXIV : WithLogger, IDisposable
+public class FFXIV : IDisposable
 {
     private MemoryHandler? _memoryHandler;
     private int _previousArrayIndex;
     private int _previousOffset;
     private int _currentChatLine = -1;
     private Task? _scan;
+    private readonly Logger _logger;
 
-    public FFXIV(Action<string> onNewChatMessage)
+    public delegate Task OnNewChatMessageDelegate(string message);
+    
+    public FFXIV(OnNewChatMessageDelegate onNewChatMessage)
     {
+        _logger = LogManager.GetCurrentClassLogger();
+        
         OnNewChatMessage = onNewChatMessage;
     }
 
-    private Action<string> OnNewChatMessage { get; }
+    private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
-    public void Start()
+    public Task Start()
     {
         var processes = Process.GetProcessesByName("ffxiv_dx11");
         if (processes.Length <= 0)
@@ -47,7 +53,16 @@ public class FFXIV : WithLogger, IDisposable
         });
 
         _logger.Debug(@"Scanning memory..");
-        Thread.Sleep(10000);
+        var startedAt = DateTime.Now;
+        while (!_memoryHandler.Scanner.Locations.ContainsKey("CHATLOG"))
+        {
+            Thread.Sleep(250);
+            if (DateTime.Now - startedAt > TimeSpan.FromSeconds(30))
+            {
+                throw new Exception("Memory scanning failed");
+            }
+        }
+
         _logger.Debug($"Locations: {_memoryHandler.Scanner.Locations.Count}");
         foreach (var location in _memoryHandler.Scanner.Locations)
         {
@@ -74,19 +89,13 @@ public class FFXIV : WithLogger, IDisposable
 
         _logger.Info($"Chat in game and it should appear here:");
 
-        _scan = Task.Run(ScanForNewMessages);
+        return ScanForNewMessages();
     }
 
-    private Task ScanForNewMessages()
+    private async Task ScanForNewMessages()
     {
-        var currentChatLine = 0;
         while (true)
         {
-            if (_currentChatLine == currentChatLine)
-            {
-                continue;
-            }
-
             var chatLog = ReadChatLog();
 
             if (chatLog == null || chatLog.IsEmpty)
@@ -98,11 +107,8 @@ public class FFXIV : WithLogger, IDisposable
             if (line != null)
             {
                 _logger.Info("New chat line: {line}", line);
-                OnNewChatMessage(line);
+                await OnNewChatMessage(line);
             }
-
-            currentChatLine++;
-            _currentChatLine = currentChatLine;
         }
     }
  

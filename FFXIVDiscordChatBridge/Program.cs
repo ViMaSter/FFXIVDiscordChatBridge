@@ -3,52 +3,64 @@ using FFXIVDiscordChatBridge.Producer;
 using NLog;
 using NLog.Fluent;
 
-namespace FFXIVDiscordChatBridge;
-
-static class Program
+namespace FFXIVDiscordChatBridge
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
-    private static string DiscordChannelID;
-
-    private static Logger logger;
-
-    [STAThread]
-    static void Main()
+    static class Program
     {
-        AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(AppDomain_CurrentDomain_UnhandledException);
+        private static string DiscordChannelID;
+        private static string DiscordToken;
 
-        logger = LogManager.GetCurrentClassLogger();
-        logger.Info("Starting FFXIVDiscordChatBridge");
-        
-        var args = Environment.GetCommandLineArgs();
-        var parameters = args
-            .Where(arg => arg.StartsWith("--"))
-            .Select(arg => arg.Split('='))
-            .ToDictionary(arg => arg[0], arg => arg[1]);
-            
-        if (!parameters.ContainsKey("--discordChannelID"))
+        private static Logger logger;
+
+        [STAThread]
+        static async Task Main()
         {
-            throw new Exception("Missing --discordChannelID parameter");
-        }
-        DiscordChannelID = parameters["--discordChannelID"];
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(AppDomain_CurrentDomain_UnhandledException);
 
-        var ffxivProducer = new Producer.FFXIV();
-        var ffxivListener = new Consumer.FFXIV(OnNewMessage);
-        ffxivListener.Start();
+            logger = LogManager.GetCurrentClassLogger();
+            logger.Info("Starting FFXIVDiscordChatBridge");
         
-        ffxivProducer.Send("hello").ConfigureAwait(true).GetAwaiter().GetResult();
-    }
+            var args = Environment.GetCommandLineArgs();
+            var parameters = args
+                .Where(arg => arg.StartsWith("--"))
+                .Select(arg => arg.Split('='))
+                .ToDictionary(arg => arg[0], arg => arg[1]);
+            
+            if (!parameters.ContainsKey("--discordChannelID"))
+            {
+                throw new Exception("Missing --discordChannelID parameter");
+            }
+            if (!parameters.ContainsKey("--discordToken"))
+            {
+                throw new Exception("Missing --discordToken parameter");
+            }
+            DiscordChannelID = parameters["--discordChannelID"];
+            DiscordToken = parameters["--discordToken"];
 
-    private static void OnNewMessage(string s)
-    {
-        logger.Info("Write to Discord:");
-        logger.Info(s);
-    }
+            // setup discord singleton
+            var discordWrapper = new DiscordClientWrapper(DiscordToken, DiscordChannelID);
+            await discordWrapper.Initialize();
+            
+            // setup producers
+            var ffxivProducer = new Producer.FFXIV();
+            var discordProducer = new Producer.Discord(discordWrapper);
+        
+            // setup consumers            
+            var ffxivConsumer = new Consumer.FFXIV(async (message) =>
+            {
+                await discordProducer.Send(message);
+            });
+            var discordConsumer = new Consumer.Discord(discordWrapper);
+        
+            // start consuming messages from FFXIV
+            var ffxivConsumerTask = ffxivConsumer.Start();
+
+            await Task.Delay(-1);
+        }
     
-    static void AppDomain_CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-    {
-        logger.Error(e.ExceptionObject);
+        static void AppDomain_CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Error(e.ExceptionObject);
+        }
     }
 }
