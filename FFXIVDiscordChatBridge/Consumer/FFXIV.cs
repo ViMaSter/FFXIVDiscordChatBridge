@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using FFXIVDiscordChatBridge.Helper;
 using NLog;
 using Sharlayan;
 using Sharlayan.Core;
@@ -15,14 +16,13 @@ public class FFXIV : IDisposable
     private int _previousOffset;
     private int _currentChatLine = -1;
     private Task? _scan;
-    private readonly Logger _logger;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private FFXIVByteHandler _handler;
 
     public delegate Task OnNewChatMessageDelegate(string message);
     
     public FFXIV(OnNewChatMessageDelegate onNewChatMessage)
-    {
-        _logger = LogManager.GetCurrentClassLogger();
-        
+    {        
         OnNewChatMessage = onNewChatMessage;
     }
 
@@ -79,11 +79,13 @@ public class FFXIV : IDisposable
         }
 
         var getCurrentPlayer = _memoryHandler.Reader.GetCurrentPlayer();
-
+        
         if (getCurrentPlayer.Entity == null)
         {
             throw new Exception("Can't read current player");
         }
+
+        _handler = new FFXIVByteHandler(WATCHED_CHANNEL,getCurrentPlayer.Entity.Name, "Zalera");
 
         _logger.Info($"Player name: {getCurrentPlayer.Entity.Name}");
 
@@ -92,6 +94,8 @@ public class FFXIV : IDisposable
         return ScanForNewMessages();
     }
 
+    private const string WATCHED_CHANNEL = "";
+    
     private async Task ScanForNewMessages()
     {
         while (true)
@@ -102,13 +106,26 @@ public class FFXIV : IDisposable
             {
                 continue;
             }
-
-            var line = chatLog.LastOrDefault()?.Line;
-            if (line != null)
+            
+            var chatLogItem = chatLog.LastOrDefault();
+            if (chatLogItem == null)
             {
-                _logger.Info("New chat line: {line}", line);
-                await OnNewChatMessage(line);
+                continue;
             }
+            
+            var couldParseMessage = _handler.TryFFXIVToDiscordFriendly(chatLogItem, out var discordMessage);
+            if (!couldParseMessage)
+            {
+                continue;
+            }
+
+            if (discordMessage == null)
+            {
+                continue;
+            }
+
+            _logger.Info("New chat line: {DiscordMessage}", discordMessage);
+            await OnNewChatMessage(discordMessage);
         }
     }
  
