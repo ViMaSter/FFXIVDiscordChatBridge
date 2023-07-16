@@ -2,10 +2,10 @@ name: Merge `autoupdate` branches
 
 on:
   workflow_dispatch:
-  check_suite:
-    types:
+  workflow_run:
+    workflows: ["Build, Release, Publish"]
+    types: 
       - completed
-  status: {}
 jobs:
   automerge:
     runs-on: ubuntu-latest
