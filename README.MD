@@ -63,11 +63,16 @@ To have both your character name and discord username shown whenever you send a 
 1. Inside Discord, send a direct message to your bot containing your full character name and server (e.g. `Haurchefant Greystone@Zalera`)
 2. You will receive a confirmation message from the bot in Discord; follow the instructions to confirm your character in FFXIV
 
-# Technical design
-
+# High-level technical design: Producers and Consumers
 This app is split into consumers and producers respectively:
 - **Producers** simply take a pre-formatted message and send it to their respective app
-- **Consumers** watch for incoming messages from their respective app and convert the incoming message into a pre-formatted message for the other format
+- **Consumers** watch for incoming messages from their respective app, convert the incoming message into a pre-formatted message for the other format and pass it to their assigned producer
 
-**FFXIV** and **Discord** have a **Consumer** and **Producer** each, that are linked.
-The 
+**FFXIV** and **Discord** have both a **Consumer** and **Producer** each.
+
+Both consumers and producers are instantiated with configuration properties that only relate to their specific purpose (consuming FFXIV chat logs or producing Discord messages) in the constructor.  
+In the next step, they are `Start()`ed, which is the point at which events are bound (for example to send messages to a now-set-up producer inside a consumer).
+
+> Note: This has the downside that a constructed but not-yet-"linked" Producer could already be used to attempt sending content, which would fail. Maybe redesign this?
+
+Implementation details for each producer and consumer can be found in their respective file headers.
