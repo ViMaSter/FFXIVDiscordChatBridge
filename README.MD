@@ -11,16 +11,16 @@ Connect a Discord channel and FFXIV in-game chat channel.
 # Setup
 ## Prerequisites
 You need:
-  - a Discord server with a channel you want to use for the chat bridge
-  - a server/virtual machine running **Windows** with **FFXIV constantly as your focussed window**  
-     - > **Note**
-       While you can use a free trial account, channels like Free Company chats will require you to be a member of the Free Company, which is only possible with an active subscription
-     - on it, the following software needs to be installed:
-       - [.NET 7.0 Runtime](https://dotnet.microsoft.com/download/dotnet/7.0)
-       - the latest version [Final Fantasy XIV](https://freetrial.finalfantasyxiv.com)
-       - the latest release of [this app](https://github.com/ViMaSter/FFXIVDiscordChatBridge/releases) extracted into any directory  
-         Replace future occurrences of `<appDirectory>` with this directory.
-  
+- a Discord server with a channel you want to use for the chat bridge
+- a server/virtual machine running **Windows** with **FFXIV constantly as your focussed window**
+   - > **Note**
+     While you can use a free trial account, channels like Free Company chats will require you to be a member of the Free Company, which is only possible with an active subscription
+   - on it, the following software needs to be installed:
+      - [.NET 7.0 Runtime](https://dotnet.microsoft.com/download/dotnet/7.0)
+      - the latest version [Final Fantasy XIV](https://freetrial.finalfantasyxiv.com)
+      - the latest release of [this app](https://github.com/ViMaSter/FFXIVDiscordChatBridge/releases) extracted into any directory  
+        Replace future occurrences of `<appDirectory>` with this directory.
+
 ## Configuration
 1. [Create a Discord application with "Bot" functionality](https://discord.com/developers/applications)
 2. Generate/reset and copy the bot token  
@@ -52,11 +52,22 @@ You need:
            --ffxivChannelCode=<ffxivChannelCode> \
            --ffxivWorldName=<ffxivWorldName>
    ```
-13. Wait for a few seconds and check if the bot has joined the server channel    
-14. As soon as the bot has joined Discord, you should see in-game messages sent to the specified Discord channel and vice versa
 
-# Linking Discord Usernames and Character Names
+# Usage
+## Regular chats
+1. Wait for a few seconds and check if the bot has joined the server channel
+2. As soon as the bot has joined Discord, you should see in-game messages sent to the specified Discord channel and vice versa
 
+## Linking Discord Usernames and Character Names
 To have both your character name and discord username shown whenever you send a message on either platform, you can link your Discord account to your FFXIV character.
 1. Inside Discord, send a direct message to your bot containing your full character name and server (e.g. `Haurchefant Greystone@Zalera`)
 2. You will receive a confirmation message from the bot in Discord; follow the instructions to confirm your character in FFXIV
+
+# Technical design
+
+This app is split into consumers and producers respectively:
+- **Producers** simply take a pre-formatted message and send it to their respective app
+- **Consumers** watch for incoming messages from their respective app and convert the incoming message into a pre-formatted message for the other format
+
+**FFXIV** and **Discord** have a **Consumer** and **Producer** each, that are linked.
+The 
