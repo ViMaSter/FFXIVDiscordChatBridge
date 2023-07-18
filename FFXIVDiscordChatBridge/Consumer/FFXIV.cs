@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using FFXIVDiscordChatBridge.Helper;
+using Microsoft.Extensions.Configuration;
 using NLog;
 using Sharlayan;
 using Sharlayan.Core;
@@ -17,16 +18,19 @@ public class FFXIV : IDisposable
     private int _previousOffset;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private FFXIVByteHandler _handler;
-
-    public delegate Task OnNewChatMessageDelegate(string message);
     
-    public FFXIV(string channelCode,OnNewChatMessageDelegate onNewChatMessage)
+    private delegate Task OnNewChatMessageDelegate(string message);
+    OnNewChatMessageDelegate OnNewChatMessage { get; }
+
+    public FFXIV(IConfiguration configuration, Producer.Discord discordProducer)
     {
-        _channelCode = channelCode;
-        OnNewChatMessage = onNewChatMessage;
+        _channelCode = configuration["ffxivChannelCode"] ?? throw new Exception("ffxivChannelCode not found");
+        OnNewChatMessage = async (message) =>
+        {
+            await discordProducer.Send(message);
+        };
     }
 
-    private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
     public Task Start()
     {

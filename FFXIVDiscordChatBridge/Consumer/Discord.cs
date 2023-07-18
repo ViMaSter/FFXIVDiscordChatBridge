@@ -4,26 +4,29 @@ using NLog;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
-internal class Discord
+public class Discord
 {
-    private readonly string _discordChannelId;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Producer.FFXIV _ffxivProducer;
+    private readonly DiscordClientWrapper _discordWrapper;
 
-    public Discord(DiscordClientWrapper discordWrapper)
+    public Discord(DiscordClientWrapper discordWrapper, Producer.FFXIV ffxivProducer)
     {
-        _discordChannelId = discordWrapper.Channel!.Id.ToString();
-        discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
+        _discordWrapper = discordWrapper;
+        _ffxivProducer = ffxivProducer;
     }
-    
+
+    public Task Start()
+    {
+        _discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
+        return Task.Delay(-1);
+    }
+
     private Task ClientOnMessageReceived(SocketMessage socketMessage)
     {
-        if (socketMessage.Channel.Id.ToString() != _discordChannelId)
-        {
-            return Task.CompletedTask;
-        }
-
         var message = socketMessage.Content;
         _logger.Info($"Received message from Discord: {message}");
+        _ffxivProducer.Send(message).Wait();
         return Task.CompletedTask;
     }
 }
