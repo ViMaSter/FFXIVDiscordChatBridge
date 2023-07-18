@@ -194,8 +194,22 @@ public class FFXIVByteHandler
         public override string ToString() => $"<{CharacterName}@{WorldName}>";
     }
 
-    public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out string? chatLog) {
+    public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out string? chatLog)
+    {
+        if (chatLogItem.Code != _chatChatChannelCode)
+        {
+            _logger.Trace($"Skipping message: Irrelevant channel code '{chatLogItem.Code}'");
+            chatLog = null;
+            return false;
+        }
 
+        if (chatLogItem.Line.StartsWith(_currentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
+        {
+            _logger.Trace($"Skipping message: Message from current character and no override (FORCEEXEC) present");
+            chatLog = null;
+            return false;
+        }
+        
         _logger.Trace(BitConverter.ToString(chatLogItem.Bytes));
 
         byte[] utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
@@ -248,20 +262,6 @@ public class FFXIVByteHandler
         if (string.IsNullOrEmpty(logMessage))
         {
             _logger.Trace($"Skipping message: Empty message'");
-            chatLog = null;
-            return false;
-        }
-        
-        if (chatLogItem.Code != _chatChatChannelCode)
-        {
-            _logger.Trace($"Skipping message: Irrelevant channel code '{chatLogItem.Code}'");
-            chatLog = null;
-            return false;
-        }
-
-        if (chatLogItem.Line.StartsWith(_currentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
-        {
-            _logger.Trace($"Skipping message: Message from current character and no override (FORCEEXEC) present");
             chatLog = null;
             return false;
         }
