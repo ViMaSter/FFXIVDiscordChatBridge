@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.1.1"></a>
+## [0.1.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v0.1.1) (2023-7-18)
+
+### Bug Fixes
+
+* **Consumer/FFXIV:** Skip message early to prevent exception when parsing irrelevant messages ([d5e649f](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/d5e649feb770d1ccf1f88a6ee2941cddd421a1e2))
+* **README:** Sets proper Markdown line-breaks for paragraphs ([942a9a7](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/942a9a744c2f31fc74d7811299438895035bf902))
+
 <a name="0.1.0"></a>
 ## [0.1.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v0.1.0) (2023-7-16)
 
