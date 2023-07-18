@@ -4,7 +4,7 @@ using NLog;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-internal class FFXIV
+public class FFXIV
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 

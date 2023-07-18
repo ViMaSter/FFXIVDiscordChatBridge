@@ -1,11 +1,12 @@
 using Discord;
 using Discord.WebSocket;
 using FFXIVDiscordChatBridge.Extensions;
+using Microsoft.Extensions.Configuration;
 using NLog;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-internal class DiscordClientWrapper
+public class DiscordClientWrapper
 {
     public readonly DiscordSocketClient Client;
 
@@ -14,10 +15,10 @@ internal class DiscordClientWrapper
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     public IMessageChannel? Channel;
 
-    public DiscordClientWrapper(string discordToken, string discordChannelId)
+    public DiscordClientWrapper(IConfiguration configuration)
     {
-        _discordToken = discordToken;
-        _discordChannelId = discordChannelId;
+        _discordToken = configuration["discordToken"] ?? throw new InvalidOperationException();
+        _discordChannelId = configuration["discordChannelID"] ?? throw new InvalidOperationException();
 
         Client = new DiscordSocketClient();
         Client.Log += (message) =>
@@ -25,9 +26,10 @@ internal class DiscordClientWrapper
             _logger.Log(message.Severity.ToNLogSeverity(), message.Message);
             return Task.CompletedTask;
         };
+        Initialize().Wait();
     }
-        
-    public async Task Initialize()
+
+    private async Task Initialize()
     {
         _logger.Info("Starting Discord client..");
 
@@ -35,7 +37,6 @@ internal class DiscordClientWrapper
         _logger.Info("Logged in to Discord");
         await Client.StartAsync();
         _logger.Info("Started Discord client; listening for messages");
-        // wait for client to be ready
         await Task.Run(async () =>
         {
             var ready = false;
@@ -55,7 +56,7 @@ internal class DiscordClientWrapper
     }
 }
 
-internal class Discord
+public class Discord
 {
     private readonly IMessageChannel _channel;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
