@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.0"></a>
+## [1.0.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.0.0) (2023-7-19)
+
+### Features
+
+* **Producer/FFXIV:** Initial commit ([67e2ab2](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/67e2ab217f225155e50c9786bcb9bb474b1cf730))
+
+### Breaking Changes
+
+* **Producer/FFXIV:** Initial commit ([67e2ab2](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/67e2ab217f225155e50c9786bcb9bb474b1cf730))
+
+### Other
+
+* Applies various Rider quick-fixes ([0be7bb5](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/0be7bb5eaece64d949245f751d197cc5224c3d7f))
+* Forward all first exceptions first chance ([7aca52c](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/7aca52c883263ac850ce2979e2b916a38ddae695))
+* Updates README setup instruction and notices ([7c30d9e](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/7c30d9e86753fa915ac483f464b28f8c5320879f))
+* Use DI to allow for easier testing ([a0a626d](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/a0a626dc59ed8783f78253ba9d8a1d0c8c35f041))
+
 <a name="0.1.1"></a>
 ## [0.1.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v0.1.1) (2023-7-18)
 
