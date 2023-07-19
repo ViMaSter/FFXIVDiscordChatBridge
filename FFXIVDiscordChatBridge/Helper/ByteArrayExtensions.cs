@@ -1,8 +1,8 @@
 namespace FFXIVDiscordChatBridge.Helper;
 
-static class ByteArrayExtensions
+internal static class ByteArrayExtensions
 {
-    static readonly int[] Empty = new int[0];
+    private static readonly int[] Empty = Array.Empty<int>();
 
     public static int[] Locate(this byte[] self, byte?[] candidate)
     {
@@ -11,7 +11,7 @@ static class ByteArrayExtensions
 
         var list = new List<int>();
 
-        for (int i = 0; i < self.Length; i++)
+        for (var i = 0; i < self.Length; i++)
         {
             if (!self.IsMatch(i, candidate))
                 continue;
@@ -22,12 +22,12 @@ static class ByteArrayExtensions
         return list.Count == 0 ? Empty : list.ToArray();
     }
 
-    static bool IsMatch(this byte[] array, int position, byte?[] candidate)
+    private static bool IsMatch(this byte[] array, int position, byte?[] candidate)
     {
         if (candidate.Length > (array.Length - position))
             return false;
 
-        for (int i = 0; i < candidate.Length; i++)
+        for (var i = 0; i < candidate.Length; i++)
         {
             if (candidate[i] == null)
                 continue;
@@ -39,7 +39,7 @@ static class ByteArrayExtensions
         return true;
     }
 
-    static bool IsEmptyLocate(byte[] array, byte?[] candidate)
+    private static bool IsEmptyLocate(byte[] array, byte?[] candidate)
     {
         return array == null
                || candidate == null

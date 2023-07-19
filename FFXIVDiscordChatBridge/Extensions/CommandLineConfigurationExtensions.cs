@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace FFXIVDiscordChatBridge;
+namespace FFXIVDiscordChatBridge.Extensions;
 
-static class CommandLineConfigurationExtensions
+internal static class CommandLineConfigurationExtensions
 {
     public static void AddCommandLineConfiguration(this IServiceCollection services)
     {

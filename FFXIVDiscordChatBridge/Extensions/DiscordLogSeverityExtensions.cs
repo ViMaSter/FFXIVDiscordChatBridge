@@ -1,6 +1,6 @@
 namespace FFXIVDiscordChatBridge.Extensions;
 
-static class DiscordLogSeverityExtensions
+internal static class DiscordLogSeverityExtensions
 {
     public static NLog.LogLevel ToNLogSeverity(this Discord.LogSeverity discordLogSeverity)
     {

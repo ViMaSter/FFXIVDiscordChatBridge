@@ -9,7 +9,7 @@ public class FFXIV
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     [DllImport ("User32.dll")]
-    static extern int SetForegroundWindow(IntPtr point);
+    private static extern int SetForegroundWindow(IntPtr point);
         
     public FFXIV()
     {
