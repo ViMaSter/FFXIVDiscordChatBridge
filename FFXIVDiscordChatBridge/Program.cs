@@ -1,16 +1,17 @@
+using FFXIVDiscordChatBridge.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 
 namespace FFXIVDiscordChatBridge
 {
-    static class Program
+    internal static class Program
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         [STAThread]
-        static async Task Main()
+        private static async Task Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) => Logger.Fatal(e.ExceptionObject);
+            AppDomain.CurrentDomain.UnhandledException += (_, e) => Logger.Fatal(e.ExceptionObject);
 
             Logger.Info("Starting FFXIVDiscordChatBridge");
             

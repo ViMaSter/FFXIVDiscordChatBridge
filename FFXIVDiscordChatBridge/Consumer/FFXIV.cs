@@ -17,10 +17,11 @@ public class FFXIV : IDisposable
     private int _previousArrayIndex;
     private int _previousOffset;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private FFXIVByteHandler _handler;
+    private FFXIVByteHandler? _handler;
     
     private delegate Task OnNewChatMessageDelegate(string message);
-    OnNewChatMessageDelegate OnNewChatMessage { get; }
+
+    private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
     public FFXIV(IConfiguration configuration, Producer.Discord discordProducer)
     {
@@ -115,7 +116,8 @@ public class FFXIV : IDisposable
             {
                 continue;
             }
-            
+
+            Debug.Assert(_handler != null, nameof(_handler) + " != null");
             var couldParseMessage = _handler.TryFFXIVToDiscordFriendly(chatLogItem, out var discordMessage);
             if (!couldParseMessage)
             {

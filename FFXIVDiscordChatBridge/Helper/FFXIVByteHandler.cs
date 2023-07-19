@@ -39,7 +39,7 @@ public class FFXIVByteHandler
         return subArrays.ToArray();
     }
 
-    public class ItemLinkReplacer
+    private static class ItemLinkReplacer
     {
         private static readonly byte?[] ItemLinkStartPattern = { 0x02, 0x48 };
         private static readonly byte?[] ItemLinkEndPattern = { 0x01, 0x03, 0x02, 0x13 };
@@ -47,7 +47,7 @@ public class FFXIVByteHandler
         private static readonly byte?[] BufferPrecedingItemNameLengthPattern = { 0x02, 0x48 };
         private static readonly byte?[] ItemNameEndPattern = { 0x02, 0x27, 0x07 };
 
-        public struct ItemReplacement
+        private struct ItemReplacement
         {
             public int StartIndex;
             public int EndIndex;
@@ -61,7 +61,7 @@ public class FFXIVByteHandler
 
         private static List<ItemReplacement> GetReplacementsFromText(byte[] rawMessage)
         {
-            List<ItemReplacement> result = new List<ItemReplacement>();
+            var result = new List<ItemReplacement>();
 
             var replacements = rawMessage.Locate(ItemLinkStartPattern);
             if (replacements.Length < 3)
@@ -69,7 +69,7 @@ public class FFXIVByteHandler
                 return result;
             }
 
-            var itemLinkBufferStartPositions = replacements.Where((x, i) => i % 3 == 0);
+            var itemLinkBufferStartPositions = replacements.Where((_, i) => i % 3 == 0);
 
             foreach (var itemLinkBufferStartPosition in itemLinkBufferStartPositions)
             {
@@ -99,7 +99,7 @@ public class FFXIVByteHandler
         {
             var messageCopy = rawMessage.ToArray();
 
-            List<ItemReplacement> replacements = GetReplacementsFromText(messageCopy);
+            var replacements = GetReplacementsFromText(messageCopy);
 
             // apply the replacements in reverse to not change positional indices
             replacements.Reverse();
@@ -137,7 +137,7 @@ public class FFXIVByteHandler
 
         private static List<PFReplacement> GetReplacementsFromText(byte[] rawMessage)
         {
-            List<PFReplacement> result = new List<PFReplacement>();
+            var result = new List<PFReplacement>();
 
             var itemLinkStartPositions = rawMessage.Locate(PFLinkStartPattern);
 
@@ -166,7 +166,7 @@ public class FFXIVByteHandler
         {
             var messageCopy = rawMessage.ToArray();
 
-            List<PFReplacement> replacements = GetReplacementsFromText(messageCopy);
+            var replacements = GetReplacementsFromText(messageCopy);
 
             // apply the replacements in reverse to not change positional indices
             replacements.Reverse();
@@ -212,13 +212,13 @@ public class FFXIVByteHandler
         
         _logger.Trace(BitConverter.ToString(chatLogItem.Bytes));
 
-        byte[] utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
+        var utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
         utf8Message = PFLinkReplacer.ReplaceItemReferences(utf8Message);
 
         var split = Split(utf8Message, 0x1F);
 
-        Character logCharacter = null;
-        string logMessage = null;
+        Character? logCharacter = null;
+        string? logMessage = null;
 
         // cross-world user require special treatment
         switch (split[1].Count(b => b == 0x03))
@@ -276,7 +276,7 @@ public class FFXIVByteHandler
 
         if (!input.Contains(' '))
         {
-            int start = 0;
+            var start = 0;
             while (start < input.Length)
             {
                 lines.Add(input.Substring(start, Math.Min(maxCharacters, input.Length - start)));
@@ -287,8 +287,8 @@ public class FFXIVByteHandler
         {
             string[] words = input.Split(' ');
 
-            string line = "";
-            foreach (string word in words)
+            var line = "";
+            foreach (var word in words)
             {
                 if ((line + word).Length > maxCharacters)
                 {
