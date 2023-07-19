@@ -20,7 +20,11 @@ public class DiscordClientWrapper
         _discordToken = configuration["discordToken"] ?? throw new InvalidOperationException();
         _discordChannelId = configuration["discordChannelID"] ?? throw new InvalidOperationException();
 
-        Client = new DiscordSocketClient();
+        Client = new DiscordSocketClient(new DiscordSocketConfig
+        {
+            GatewayIntents = GatewayIntents.DirectMessages | GatewayIntents.MessageContent | GatewayIntents.Guilds | GatewayIntents.GuildMessages,
+            LogLevel = LogSeverity.Verbose
+        });
         Client.Log += (message) =>
         {
             _logger.Log(message.Severity.ToNLogSeverity(), message.Message);
