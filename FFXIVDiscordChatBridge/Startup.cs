@@ -9,7 +9,7 @@ public class Startup
 
     public Startup(Consumer.FFXIV ffxivConsumer, Consumer.Discord discordConsumer)
     {
-        _ffxivConsumerTask = ffxivConsumer.Start();
-        _discordConsumerTask = discordConsumer.Start();
+        _ffxivConsumerTask = Task.Run(ffxivConsumer.Start);
+        _discordConsumerTask = Task.Run(discordConsumer.Start);
     }
 }

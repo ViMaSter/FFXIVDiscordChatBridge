@@ -24,9 +24,28 @@ public class Discord
 
     private Task ClientOnMessageReceived(SocketMessage socketMessage)
     {
-        var message = socketMessage.Content;
-        _logger.Info($"Received message from Discord: {message}");
-        _ffxivProducer.Send(message).Wait();
+        if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
+        {
+            return Task.CompletedTask;
+        }
+        
+        if (socketMessage.Channel.Id != _discordWrapper.Channel!.Id)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (socketMessage.Author is not SocketGuildUser guildUser)
+        {
+            return Task.CompletedTask;
+        }
+
+        var userDisplayName = guildUser.DisplayName;
+
+        var formattedMessage = $"[{userDisplayName}]: {socketMessage.Content}";
+
+        _logger.Info($"Received message from Discord: {formattedMessage}");
+        _ffxivProducer.Send(formattedMessage).Wait();
         return Task.CompletedTask;
+
     }
 }

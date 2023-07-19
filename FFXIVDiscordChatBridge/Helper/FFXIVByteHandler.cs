@@ -191,7 +191,7 @@ public class FFXIVByteHandler
         }
         public string CharacterName;
         public string WorldName;
-        public override string ToString() => $"<{CharacterName}@{WorldName}>";
+        public override string ToString() => $"<{CharacterName}>";
     }
 
     public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out string? chatLog)

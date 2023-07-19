@@ -13,14 +13,10 @@ public class FFXIV
         
     public FFXIV()
     {
-        var ffxivProcess = Process.GetProcessesByName("ffxiv").FirstOrDefault();
+        var ffxivProcess = Process.GetProcessesByName("ffxiv").Concat(Process.GetProcessesByName("ffxiv_dx11")).FirstOrDefault();
         if (ffxivProcess == null)
         {
-            ffxivProcess = Process.GetProcessesByName("ffxiv_dx11").FirstOrDefault();
-            if (ffxivProcess == null)
-            {
-                throw new Exception("FFXIV not found");
-            }
+            throw new Exception("FFXIV not found");
         }
 
         var handle = ffxivProcess.MainWindowHandle;
@@ -37,7 +33,7 @@ public class FFXIV
         SendKeys.SendWait("~");
         await Task.Delay(200);
         SendKeys.SendWait(message);
-        await Task.Delay(200);
+        await Task.Delay(500);
         SendKeys.SendWait("~");
     }
 }
