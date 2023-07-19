@@ -12,6 +12,7 @@ namespace FFXIVDiscordChatBridge
         private static async Task Main()
         {
             AppDomain.CurrentDomain.UnhandledException += (_, e) => Logger.Fatal(e.ExceptionObject);
+            AppDomain.CurrentDomain.FirstChanceException += (_, e) => Logger.Error(e.Exception);
 
             Logger.Info("Starting FFXIVDiscordChatBridge");
             
