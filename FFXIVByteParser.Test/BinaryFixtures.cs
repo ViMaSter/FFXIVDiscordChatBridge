@@ -69,6 +69,30 @@ public class ChatLogParserTest
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = "Sereth Milbana: " + System.Text.Encoding.UTF8.GetString(actualInput) + "FORCEEXEC", Code = CHANNEL_CODE}, out var result), Is.True);
         CollectionAssert.AreEqual(expectedData, result);
     }
+    
+    /// <summary>
+    /// The character used as bot is ignored
+    /// </summary>
+    [Test]
+    [TestCaseSource(nameof(GetInvalidChats))]
+    public void HandleInvalidChats(string fileName, byte[] actualInput, string expectedData)
+    {
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
+        Assert.That(result, Is.Null);
+    }
+    
+    /// <summary>
+    /// The character used as bot is ignored
+    /// </summary>
+    [Test]
+    [TestCaseSource(nameof(GetEmptyChats))]
+    public void HandleEmptyChats(string fileName, byte[] actualInput, string expectedData)
+    {
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
+        Assert.That(result, Is.Null);
+    }
 
     public static IEnumerable<object[]> GetChatsFromOtherCharacter()
     {
@@ -91,6 +115,34 @@ public class ChatLogParserTest
             .Where(resourcePath => resourcePath.EndsWith(".binary"))
             .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
             .Where(resourcePath => resourcePath.Contains("ChatsFromOwnCharacter"))
+            .Select(pathToBinary => new object[] {
+                pathToBinary.Replace(".binary", ""),
+                ExtractResource(pathToBinary),
+                System.Text.Encoding.UTF8.GetString(ExtractResource(pathToBinary.Replace(".binary", ".result")))
+            });
+    }
+
+    public static IEnumerable<object[]> GetInvalidChats()
+    {
+        var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+        return currentAssembly.GetManifestResourceNames()
+            .Where(resourcePath => resourcePath.EndsWith(".binary"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("InvalidChats"))
+            .Select(pathToBinary => new object[] {
+                pathToBinary.Replace(".binary", ""),
+                ExtractResource(pathToBinary),
+                System.Text.Encoding.UTF8.GetString(ExtractResource(pathToBinary.Replace(".binary", ".result")))
+            });
+    }
+
+    public static IEnumerable<object[]> GetEmptyChats()
+    {
+        var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+        return currentAssembly.GetManifestResourceNames()
+            .Where(resourcePath => resourcePath.EndsWith(".binary"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("EmptyChats"))
             .Select(pathToBinary => new object[] {
                 pathToBinary.Replace(".binary", ""),
                 ExtractResource(pathToBinary),

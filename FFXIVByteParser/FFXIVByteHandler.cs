@@ -249,7 +249,7 @@ public class FFXIVByteHandler
                     Encoding.UTF8.GetString(crossWorldInfoSplit[1].TakeWhile(item => item != 0x02).ToArray()),
                     Encoding.UTF8.GetString(crossWorldInfoSplit[3])
                 );
-                logMessage = Encoding.UTF8.GetString(split[2]);
+                logMessage = Encoding.UTF8.GetString(split[2]).Trim();
             }
                 break;
             case 2:
@@ -259,7 +259,7 @@ public class FFXIVByteHandler
                     Encoding.UTF8.GetString(crossWorldInfoSplit[1].TakeWhile(item => item != 0x02).ToArray()),
                     _currentCharacter.WorldName
                 );
-                logMessage = Encoding.UTF8.GetString(split[2]);
+                logMessage = Encoding.UTF8.GetString(split[2]).Trim();
             }
                 break;
             case 0:
@@ -267,7 +267,7 @@ public class FFXIVByteHandler
                     Encoding.UTF8.GetString(split[1]),
                     _currentCharacter.WorldName
                 );
-                logMessage = Encoding.UTF8.GetString(split[2]);
+                logMessage = Encoding.UTF8.GetString(split[2]).Trim();
                 break;
         }
 
@@ -287,43 +287,5 @@ public class FFXIVByteHandler
 
         chatLog = $"{logCharacter.Format(_characterNameDisplay)} {logMessage}";
         return true;
-    }
-
-    private static List<string> WordWrap(string input, int maxCharacters)
-    {
-        var lines = new List<string>();
-
-        if (!input.Contains(' '))
-        {
-            var start = 0;
-            while (start < input.Length)
-            {
-                lines.Add(input.Substring(start, Math.Min(maxCharacters, input.Length - start)));
-                start += maxCharacters;
-            }
-        }
-        else
-        {
-            string[] words = input.Split(' ');
-
-            var line = "";
-            foreach (var word in words)
-            {
-                if ((line + word).Length > maxCharacters)
-                {
-                    lines.Add(line.Trim());
-                    line = "";
-                }
-
-                line += $"{word} ";
-            }
-
-            if (line.Length > 0)
-            {
-                lines.Add(line.Trim());
-            }
-        }
-
-        return lines;
     }
 }
