@@ -1,18 +1,19 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-public class FFXIV
+public class FFXIV : IFFXIVProducer
 {
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly ILogger<FFXIV> _logger;
 
     [DllImport ("User32.dll")]
     private static extern int SetForegroundWindow(IntPtr point);
         
-    public FFXIV()
+    public FFXIV(ILogger<FFXIV> logger)
     {
+        _logger = logger;
         var ffxivProcess = Process.GetProcessesByName("ffxiv").Concat(Process.GetProcessesByName("ffxiv_dx11")).FirstOrDefault();
         if (ffxivProcess == null)
         {
@@ -29,7 +30,7 @@ public class FFXIV
         
     public async Task Send(string message)
     {
-        _logger.Info("Sending message to FFXIV: {Message}", message);
+        _logger.LogInformation("Sending message to FFXIV: {Message}", message);
         SendKeys.SendWait("~");
         await Task.Delay(200);
         SendKeys.SendWait(message);

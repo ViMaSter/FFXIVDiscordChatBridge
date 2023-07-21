@@ -1,4 +1,4 @@
-namespace FFXIVDiscordChatBridge.Helper;
+namespace FFXIVByteParser;
 
 internal static class ByteArrayExtensions
 {

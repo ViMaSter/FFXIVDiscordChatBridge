@@ -18,11 +18,13 @@ namespace FFXIVDiscordChatBridge
             
             var services = new ServiceCollection();
             services.AddCommandLineConfiguration();
+
+            services.AddLogging();
             
-            services.AddSingleton<Producer.DiscordClientWrapper>();
+            services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
             
-            services.AddSingleton<Producer.FFXIV>();
-            services.AddSingleton<Producer.Discord>();
+            services.AddSingleton<Producer.IFFXIVProducer, Producer.FFXIV>();
+            services.AddSingleton<Producer.IDiscordProducer, Producer.Discord>();
             
             services.AddSingleton<Consumer.FFXIV>();
             services.AddSingleton<Consumer.Discord>();

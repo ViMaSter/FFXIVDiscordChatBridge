@@ -1,21 +1,31 @@
 ﻿using System.Text;
+using Microsoft.Extensions.Logging;
 using NLog;
 using Sharlayan.Core;
 
-namespace FFXIVDiscordChatBridge.Helper;
+namespace FFXIVByteParser;
 
 public class FFXIVByteHandler
 {
+    private readonly ILogger<FFXIVByteHandler> _logger;
     private readonly string _chatChatChannelCode;
+    private readonly CharacterNameDisplay _characterNameDisplay;
     private readonly Character _currentCharacter;
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    
-    public FFXIVByteHandler(string chatChannelCode, string playerName, string worldName)
+
+    public enum CharacterNameDisplay
     {
+        WITHOUT_WORLD,
+        WITH_WORLD
+    }
+    
+    public FFXIVByteHandler(ILogger<FFXIVByteHandler> logger, string chatChannelCode, string playerName, string worldName, CharacterNameDisplay characterNameDisplay)
+    {
+        _logger = logger;
         _chatChatChannelCode = chatChannelCode;
-        _logger.Debug($"Chat channel code: {chatChannelCode}");
+        _characterNameDisplay = characterNameDisplay;
+        _logger.LogDebug("Chat channel code: {ChatChannelCode}", chatChannelCode);
         _currentCharacter = new Character(playerName, worldName);
-        _logger.Debug($"Current character: {playerName}@{worldName}");
+        _logger.LogDebug("Current character: {PlayerName}@{WorldName}", playerName, worldName);
     }
 
     private static byte[][] Split(byte[] input, byte separator, bool ignoreEmptyEntries = false)
@@ -191,26 +201,35 @@ public class FFXIVByteHandler
         }
         public string CharacterName;
         public string WorldName;
-        public override string ToString() => $"<{CharacterName}>";
+
+        public string Format(CharacterNameDisplay characterNameDisplay)
+        {
+            if (characterNameDisplay == CharacterNameDisplay.WITH_WORLD)
+            {
+                return $"<{CharacterName}@{WorldName}>";
+            }
+
+            return $"<{CharacterName}>";
+        }
     }
 
     public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out string? chatLog)
     {
         if (chatLogItem.Code != _chatChatChannelCode)
         {
-            _logger.Trace($"Skipping message: Irrelevant channel code '{chatLogItem.Code}'");
+            _logger.LogTrace($"Skipping message: Irrelevant channel code '{chatLogItem.Code}'");
             chatLog = null;
             return false;
         }
 
         if (chatLogItem.Line.StartsWith(_currentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
         {
-            _logger.Trace($"Skipping message: Message from current character and no override (FORCEEXEC) present");
+            _logger.LogTrace($"Skipping message: Message from current character and no override (FORCEEXEC) present");
             chatLog = null;
             return false;
         }
         
-        _logger.Trace(BitConverter.ToString(chatLogItem.Bytes));
+        _logger.LogTrace(BitConverter.ToString(chatLogItem.Bytes));
 
         var utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
         utf8Message = PFLinkReplacer.ReplaceItemReferences(utf8Message);
@@ -254,19 +273,19 @@ public class FFXIVByteHandler
 
         if (logCharacter == null)
         {
-            _logger.Trace($"Skipping message: Failed to parse character name'");
+            _logger.LogTrace($"Skipping message: Failed to parse character name'");
             chatLog = null;
             return false;
         }
 
         if (string.IsNullOrEmpty(logMessage))
         {
-            _logger.Trace($"Skipping message: Empty message'");
+            _logger.LogTrace($"Skipping message: Empty message'");
             chatLog = null;
             return false;
         }
 
-        chatLog = $"{logCharacter} {logMessage}";
+        chatLog = $"{logCharacter.Format(_characterNameDisplay)} {logMessage}";
         return true;
     }
 

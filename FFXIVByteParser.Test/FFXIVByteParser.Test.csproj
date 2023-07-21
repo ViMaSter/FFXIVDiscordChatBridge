@@ -1,0 +1,109 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+        <PackageReference Include="NUnit" Version="3.13.3" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+        <PackageReference Include="NUnit.Analyzers" Version="3.3.0" />
+        <PackageReference Include="coverlet.collector" Version="3.1.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FFXIVByteParser\FFXIVByteParser.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="ChatsFromOwnCharacter\crossworld.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\crossworld.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\localuser.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\localuser.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\item.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\item.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\localuser.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\localuser.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\item2.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\item2.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\item2.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\item2.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\item.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\item.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\localuser.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\localuser.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\item.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\item.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\partyfinder.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\partyfinder.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\partyfinder.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\partyfinder.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\partyfinder.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\partyfinder.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\crossworld.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\crossworld.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\item2.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\item2.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\localuser.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\localuser.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\partyfinder.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\partyfinder.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\crossworld.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\crossworld.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\item2.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\item2.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\crossworld.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\crossworld.result">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="ChatsFromOwnCharacter\item.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\item.binary">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
+</Project>
