@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using FFXIVDiscordChatBridge.Helper;
+using FFXIVByteParser;
 using Microsoft.Extensions.Configuration;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Sharlayan;
 using Sharlayan.Core;
 using Sharlayan.Enums;
@@ -10,21 +10,24 @@ using Sharlayan.Models;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
-public class FFXIV : IDisposable
+public class FFXIV : IDisposable, IFFXIVConsumer
 {
     private readonly string _channelCode;
     private MemoryHandler? _memoryHandler;
     private int _previousArrayIndex;
     private int _previousOffset;
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly ILogger<FFXIV> _logger;
+    private readonly ILogger<FFXIVByteHandler> _byteHandlerLogger;
     private FFXIVByteHandler? _handler;
     
     private delegate Task OnNewChatMessageDelegate(string message);
 
     private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
-    public FFXIV(IConfiguration configuration, Producer.Discord discordProducer)
+    public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscordProducer discordProducer)
     {
+        _logger = logger;
+        _byteHandlerLogger = byteHandlerLogger;
         _channelCode = configuration["ffxivChannelCode"] ?? throw new Exception("ffxivChannelCode not found");
         OnNewChatMessage = async (message) =>
         {
@@ -57,7 +60,7 @@ public class FFXIV : IDisposable
             UseLocalCache = false
         });
 
-        _logger.Debug(@"Scanning memory..");
+        _logger.LogDebug(@"Scanning memory..");
         var startedAt = DateTime.Now;
         while (!(_memoryHandler.Scanner.Locations.ContainsKey("CHATLOG") && _memoryHandler.Scanner.Locations.ContainsKey("PLAYERINFO")))
         {
@@ -68,10 +71,10 @@ public class FFXIV : IDisposable
             }
         }
 
-        _logger.Debug($"Locations: {_memoryHandler.Scanner.Locations.Count}");
+        _logger.LogDebug("Locations: {LocationsCount}", _memoryHandler.Scanner.Locations.Count);
         foreach (var location in _memoryHandler.Scanner.Locations)
         {
-            _logger.Debug($"Found {location.Key}. Location: {location.Value.GetAddress().ToInt64():X}");
+            _logger.LogDebug("Found {LocationKey}. Location: {Int64}", location.Key, location.Value.GetAddress().ToInt64());
         }
 
         if (_memoryHandler.Reader == null)
@@ -90,11 +93,11 @@ public class FFXIV : IDisposable
             throw new Exception("Can't read current player");
         }
 
-        _handler = new FFXIVByteHandler(_channelCode,getCurrentPlayer.Entity.Name, "Zalera");
+        _handler = new FFXIVByteHandler(_byteHandlerLogger, _channelCode,getCurrentPlayer.Entity.Name, "Zalera", FFXIVByteHandler.CharacterNameDisplay.WITHOUT_WORLD);
 
-        _logger.Info($"Player name: {getCurrentPlayer.Entity.Name}");
+        _logger.LogInformation("Player name: {PlayerName}", getCurrentPlayer.Entity.Name);
 
-        _logger.Info($"Chat in game and it should appear here:");
+        _logger.LogInformation($"Chat in game and it should appear here:");
 
         return ScanForNewMessages();
     }
@@ -129,7 +132,7 @@ public class FFXIV : IDisposable
                 continue;
             }
 
-            _logger.Info("New chat line: {DiscordMessage}", discordMessage);
+            _logger.LogInformation("New chat line: {DiscordMessage}", discordMessage);
             await OnNewChatMessage(discordMessage);
         }
     }

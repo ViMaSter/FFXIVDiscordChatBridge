@@ -2,21 +2,28 @@ using Discord;
 using Discord.WebSocket;
 using FFXIVDiscordChatBridge.Extensions;
 using Microsoft.Extensions.Configuration;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-public class DiscordClientWrapper
+public interface IDiscordClientWrapper
 {
-    public readonly DiscordSocketClient Client;
+    public DiscordSocketClient Client { get; }
+    public IMessageChannel? Channel { get; }
+}
+
+public class DiscordClientWrapper : IDiscordClientWrapper
+{
+    private readonly ILogger<DiscordClientWrapper> _logger;
+    public DiscordSocketClient Client { get; }
+    public IMessageChannel? Channel { get; private set; }
 
     private readonly string _discordToken;
     private readonly string _discordChannelId;
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public IMessageChannel? Channel;
 
-    public DiscordClientWrapper(IConfiguration configuration)
+    public DiscordClientWrapper(ILogger<DiscordClientWrapper> logger, IConfiguration configuration)
     {
+        _logger = logger;
         _discordToken = configuration["discordToken"] ?? throw new InvalidOperationException();
         _discordChannelId = configuration["discordChannelID"] ?? throw new InvalidOperationException();
 
@@ -35,18 +42,18 @@ public class DiscordClientWrapper
 
     private async Task Initialize()
     {
-        _logger.Info("Starting Discord client..");
+        _logger.LogInformation("Starting Discord client..");
 
         await Client.LoginAsync(TokenType.Bot, _discordToken);
-        _logger.Info("Logged in to Discord");
+        _logger.LogInformation("Logged in to Discord");
         await Client.StartAsync();
-        _logger.Info("Started Discord client; listening for messages");
+        _logger.LogInformation("Started Discord client; listening for messages");
         await Task.Run(async () =>
         {
             var ready = false;
             Client.Ready += () =>
             {
-                _logger.Info("Discord client is ready");
+                _logger.LogInformation("Discord client is ready");
                 ready = true;
                 return Task.CompletedTask;
             };
@@ -60,20 +67,21 @@ public class DiscordClientWrapper
     }
 }
 
-public class Discord
+public class Discord : IDiscordProducer
 {
+    private readonly ILogger<Discord> _logger;
     private readonly IMessageChannel _channel;
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    public Discord(DiscordClientWrapper wrapper)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper wrapper)
     {
+        _logger = logger;
         _channel = wrapper.Channel!;
     }
     
     public async Task Send(string content)
     {
-        _logger.Info($"Sending message to Discord: {content}");
+        _logger.LogInformation("Sending message to Discord: {Content}", content);
         var a = await _channel.SendMessageAsync(content);
-        _logger.Info($"Send message to Discord: {content}");
+        _logger.LogInformation("Send message to Discord: {Content}", content);
     }
 }

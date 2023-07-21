@@ -26,4 +26,12 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\FFXIVByteParser\FFXIVByteParser.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Helper\" />
+    </ItemGroup>
+
 </Project>

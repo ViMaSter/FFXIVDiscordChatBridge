@@ -1,17 +1,18 @@
 using Discord.WebSocket;
 using FFXIVDiscordChatBridge.Producer;
-using NLog;
+using Microsoft.Extensions.Logging;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
-public class Discord
+public class Discord : IDiscordConsumer
 {
-    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly Producer.FFXIV _ffxivProducer;
-    private readonly DiscordClientWrapper _discordWrapper;
+    private readonly ILogger<Discord> _logger;
+    private readonly IFFXIVProducer _ffxivProducer;
+    private readonly IDiscordClientWrapper _discordWrapper;
 
-    public Discord(DiscordClientWrapper discordWrapper, Producer.FFXIV ffxivProducer)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIVProducer ffxivProducer)
     {
+        _logger = logger;
         _discordWrapper = discordWrapper;
         _ffxivProducer = ffxivProducer;
     }
@@ -43,7 +44,7 @@ public class Discord
 
         var formattedMessage = $"[{userDisplayName}]: {socketMessage.Content}";
 
-        _logger.Info($"Received message from Discord: {formattedMessage}");
+        _logger.LogInformation($"Received message from Discord: {formattedMessage}");
         _ffxivProducer.Send(formattedMessage).Wait();
         return Task.CompletedTask;
 

@@ -1,16 +1,18 @@
+using Microsoft.Extensions.Logging;
+
 namespace FFXIVDiscordChatBridge.Extensions;
 
 internal static class DiscordLogSeverityExtensions
 {
-    public static NLog.LogLevel ToNLogSeverity(this Discord.LogSeverity discordLogSeverity)
+    public static LogLevel ToNLogSeverity(this Discord.LogSeverity discordLogSeverity)
     {
         return discordLogSeverity switch {
-            Discord.LogSeverity.Critical => NLog.LogLevel.Fatal,
-            Discord.LogSeverity.Error => NLog.LogLevel.Error,
-            Discord.LogSeverity.Warning => NLog.LogLevel.Warn,
-            Discord.LogSeverity.Info => NLog.LogLevel.Info,
-            Discord.LogSeverity.Verbose => NLog.LogLevel.Trace,
-            Discord.LogSeverity.Debug => NLog.LogLevel.Debug,
+            Discord.LogSeverity.Critical => LogLevel.Critical,
+            Discord.LogSeverity.Error => LogLevel.Error,
+            Discord.LogSeverity.Warning => LogLevel.Warning,
+            Discord.LogSeverity.Info => LogLevel.Information,
+            Discord.LogSeverity.Verbose => LogLevel.Trace,
+            Discord.LogSeverity.Debug => LogLevel.Debug,
             _ => throw new ArgumentOutOfRangeException(nameof(discordLogSeverity), discordLogSeverity, null)
         };
     }
