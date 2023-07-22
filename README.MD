@@ -1,4 +1,4 @@
-# FFXIV Discord Chat Bridge
+# FFXIV Discord Chat Bridge [![codecov](https://codecov.io/github/ViMaSter/FFXIVDiscordChatBridge/branch/main/graph/badge.svg?token=2PBSK0I6UI)](https://codecov.io/github/ViMaSter/FFXIVDiscordChatBridge)
 
 Connect a Discord channel and FFXIV in-game chat channel.
 
