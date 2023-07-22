@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.0"></a>
+## [1.2.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.2.0) (2023-7-22)
+
+### Features
+
+* Handle emoji, mentions, attachments and stickers ([7159595](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/715959573397dc9b7d0c43daada4a698daf40b3c))
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.1.0) (2023-7-22)
 
