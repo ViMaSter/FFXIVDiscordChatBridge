@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.0"></a>
+## [1.1.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.1.0) (2023-7-22)
+
+### Features
+
+* Increases coverage ([5da2cf9](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/5da2cf9f833ac45ca74d98039ff15f77a91d04b2))
+
+### Other
+
+* Utilizes Dependency Injection to allow to easily split byte parser into separate project with test coverage ([092a530](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/092a530d2e8ec7267a906ceec00096752db959b0))
+
 <a name="1.0.0"></a>
 ## [1.0.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.0.0) (2023-7-19)
 
