@@ -15,14 +15,6 @@ public class Character
         return Equals((Character)obj);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(CharacterName, StringComparer.InvariantCultureIgnoreCase);
-        hashCode.Add(WorldName, StringComparer.InvariantCultureIgnoreCase);
-        return hashCode.ToHashCode();
-    }
-
     public Character(string characterName, string worldName)
     {
         CharacterName = characterName;

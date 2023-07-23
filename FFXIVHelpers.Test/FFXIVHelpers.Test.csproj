@@ -23,9 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-    </ItemGroup>
-
-    <ItemGroup>
       <EmbeddedResource Include="EmptyChats\crossworld.binary">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
