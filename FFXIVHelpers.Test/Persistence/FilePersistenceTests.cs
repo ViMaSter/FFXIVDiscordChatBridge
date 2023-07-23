@@ -27,7 +27,7 @@ public class FilePersistenceTests
             {
                 Assert.That(loadedMappings, Has.Count.EqualTo(1));
                 Assert.That(loadedMappings[0].Discord.Name, Is.EqualTo("DiscordUsername"));
-                Assert.That(loadedMappings[0].FFXIV.Name.Format(CharacterNameDisplay.WITH_WORLD), Is.EqualTo($"{FFXIV_USERNAME}@{FFXIV_WORLD}"));
+                Assert.That(loadedMappings[0].FFXIV.Name.Format(CharacterNameDisplay.WithWorld), Is.EqualTo($"{FFXIV_USERNAME}@{FFXIV_WORLD}"));
             });
         }
         

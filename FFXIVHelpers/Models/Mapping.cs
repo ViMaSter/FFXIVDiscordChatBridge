@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace FFXIVHelpers.Models;
+﻿namespace FFXIVHelpers.Models;
 
 public class Mapping
 {
@@ -44,7 +42,7 @@ public class Mapping
     public DiscordInfo Discord { get; }
 
     [Newtonsoft.Json.JsonIgnore]
-    public string CombinedName => $"{FFXIV.Name.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{Discord.Name}";
+    public string CombinedName => $"{FFXIV.Name.Format(CharacterNameDisplay.WithoutWorld)}/@{Discord.Name}";
 
     [Newtonsoft.Json.JsonConstructor]
     private Mapping(FFXIVInfo ffxiv, DiscordInfo discord)

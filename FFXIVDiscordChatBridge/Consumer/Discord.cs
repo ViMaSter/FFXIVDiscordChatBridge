@@ -38,8 +38,8 @@ public class Discord : IDiscordConsumer
         
         return socketMessage.Channel switch
         {
-            SocketDMChannel directMessage => HandleUsernameMapping(socketUserMessage),
-            SocketTextChannel channelMessage => HandleFFXIVMessage(socketUserMessage),
+            SocketDMChannel => HandleUsernameMapping(socketUserMessage),
+            SocketTextChannel => HandleFFXIVMessage(socketUserMessage),
             _ => Task.CompletedTask
         };
     }

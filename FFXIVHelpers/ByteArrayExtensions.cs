@@ -39,12 +39,12 @@ internal static class ByteArrayExtensions
         return true;
     }
 
-    private static bool IsEmptyLocate(byte[] array, byte?[] candidate)
+    private static bool IsEmptyLocate(IReadOnlyCollection<byte>? array, IReadOnlyCollection<byte?>? candidate)
     {
         return array == null
                || candidate == null
-               || array.Length == 0
-               || candidate.Length == 0
-               || candidate.Length > array.Length;
+               || array.Count == 0
+               || candidate.Count == 0
+               || candidate.Count > array.Count;
     }
 }
