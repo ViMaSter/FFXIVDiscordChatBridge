@@ -30,8 +30,10 @@ namespace FFXIVDiscordChatBridge
             
             services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
             
-            services.AddSingleton<Producer.IFFXIVProducer, Producer.FFXIV>();
-            services.AddSingleton<Producer.IDiscordProducer, Producer.Discord>();
+            services.AddSingleton<Producer.IFFXIV, Producer.FFXIV>();
+            services.AddSingleton<Producer.IDiscord, Producer.Discord>();
+            
+            services.AddSingleton<UsernameMapping>();
             
             services.AddSingleton<Consumer.FFXIV>();
             services.AddSingleton<Consumer.Discord>();

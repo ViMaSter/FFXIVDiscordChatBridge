@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using FFXIVByteParser.Models;
 using Microsoft.Extensions.Logging;
 using NLog;
 using Sharlayan.Core;
@@ -8,23 +9,17 @@ namespace FFXIVByteParser;
 public class FFXIVByteHandler
 {
     private readonly ILogger<FFXIVByteHandler> _logger;
-    private readonly string _chatChatChannelCode;
-    private readonly CharacterNameDisplay _characterNameDisplay;
-    private readonly Character _currentCharacter;
+    private readonly string _chatChannelCode;
+    private const string TELL_CHAT_RECEIVING_CHANNEL = "000D";
+    private IEnumerable<string> MonitoredChannels => new[]{_chatChannelCode, TELL_CHAT_RECEIVING_CHANNEL};
+    public Character CurrentCharacter { get; }
 
-    public enum CharacterNameDisplay
-    {
-        WITHOUT_WORLD,
-        WITH_WORLD
-    }
-    
-    public FFXIVByteHandler(ILogger<FFXIVByteHandler> logger, string chatChannelCode, string playerName, string worldName, CharacterNameDisplay characterNameDisplay)
+    public FFXIVByteHandler(ILogger<FFXIVByteHandler> logger, string chatChannelCode, string playerName, string worldName)
     {
         _logger = logger;
-        _chatChatChannelCode = chatChannelCode;
-        _characterNameDisplay = characterNameDisplay;
+        _chatChannelCode = chatChannelCode;
         _logger.LogDebug("Chat channel code: {ChatChannelCode}", chatChannelCode);
-        _currentCharacter = new Character(playerName, worldName);
+        CurrentCharacter = new Character(playerName, worldName);
         _logger.LogDebug("Current character: {PlayerName}@{WorldName}", playerName, worldName);
     }
 
@@ -192,37 +187,18 @@ public class FFXIVByteHandler
         }
     }
 
-    private class Character
+    public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out FromFFXIV? chatLog)
     {
-        public Character(string characterName, string worldName)
+        if (MonitoredChannels.All(channel => channel != chatLogItem.Code))
         {
-            CharacterName = characterName;
-            WorldName = worldName;
-        }
-        public string CharacterName;
-        public string WorldName;
-
-        public string Format(CharacterNameDisplay characterNameDisplay)
-        {
-            if (characterNameDisplay == CharacterNameDisplay.WITH_WORLD)
-            {
-                return $"<{CharacterName}@{WorldName}>";
-            }
-
-            return $"<{CharacterName}>";
-        }
-    }
-
-    public bool TryFFXIVToDiscordFriendly(ChatLogItem chatLogItem, out string? chatLog)
-    {
-        if (chatLogItem.Code != _chatChatChannelCode)
-        {
-            _logger.LogTrace($"Skipping message: Irrelevant channel code '{chatLogItem.Code}'");
+            _logger.LogTrace("Skipping message: Irrelevant channel code '{Code}'", chatLogItem.Code);
             chatLog = null;
             return false;
         }
+        
+        var isTell = chatLogItem.Code == TELL_CHAT_RECEIVING_CHANNEL;
 
-        if (chatLogItem.Line.StartsWith(_currentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
+        if (chatLogItem.Line.StartsWith(CurrentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
         {
             _logger.LogTrace($"Skipping message: Message from current character and no override (FORCEEXEC) present");
             chatLog = null;
@@ -257,7 +233,7 @@ public class FFXIVByteHandler
                 var crossWorldInfoSplit = Split(split[1], 0x03);
                 logCharacter = new Character(
                     Encoding.UTF8.GetString(crossWorldInfoSplit[1].TakeWhile(item => item != 0x02).ToArray()),
-                    _currentCharacter.WorldName
+                    CurrentCharacter.WorldName
                 );
                 logMessage = Encoding.UTF8.GetString(split[2]).Trim();
             }
@@ -265,7 +241,7 @@ public class FFXIVByteHandler
             case 0:
                 logCharacter = new Character(
                     Encoding.UTF8.GetString(split[1]),
-                    _currentCharacter.WorldName
+                    CurrentCharacter.WorldName
                 );
                 logMessage = Encoding.UTF8.GetString(split[2]).Trim();
                 break;
@@ -285,7 +261,13 @@ public class FFXIVByteHandler
             return false;
         }
 
-        chatLog = $"{logCharacter.Format(_characterNameDisplay)} {logMessage}";
+        if (isTell)
+        {
+            chatLog = new FromTellMessage(logCharacter, logMessage);
+            return true;
+        }
+        
+        chatLog = new FromMonitoredChannel(logCharacter, logMessage);
         return true;
     }
 }

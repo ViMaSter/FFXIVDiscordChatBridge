@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using FFXIVByteParser.Models;
 using FFXIVDiscordChatBridge.Producer;
 using Microsoft.Extensions.Logging;
 
@@ -8,14 +9,16 @@ namespace FFXIVDiscordChatBridge.Consumer;
 public class Discord : IDiscordConsumer
 {
     private readonly ILogger<Discord> _logger;
-    private readonly IFFXIVProducer _ffxivProducer;
+    private readonly IFFXIV _ffxivProducer;
+    private readonly UsernameMapping _usernameMapping;
     private readonly IDiscordClientWrapper _discordWrapper;
 
-    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIVProducer ffxivProducer)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping)
     {
         _logger = logger;
         _discordWrapper = discordWrapper;
         _ffxivProducer = ffxivProducer;
+        _usernameMapping = usernameMapping;
     }
 
     public Task Start()
@@ -25,6 +28,42 @@ public class Discord : IDiscordConsumer
     }
 
     private Task ClientOnMessageReceived(SocketMessage socketMessage)
+    {
+        if (socketMessage is not SocketUserMessage socketUserMessage)
+        {
+            _logger.LogInformation("Received non-UserMessage from Discord: {Message}", socketMessage);
+            return Task.CompletedTask;
+        }
+        
+        return socketMessage.Channel switch
+        {
+            SocketDMChannel directMessage => HandleUsernameMapping(socketUserMessage),
+            SocketTextChannel channelMessage => HandleFFXIVMessage(socketUserMessage),
+            _ => Task.CompletedTask
+        };
+    }
+
+    private Task HandleUsernameMapping(SocketUserMessage socketMessage)
+    {
+        // skip messages from the bot itself
+        if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
+        {
+            return Task.CompletedTask;
+        }
+        
+        var fromDiscordMessage = socketMessage.Content.Replace("`", "").Trim().Split("@").Select(x => x.Trim()).ToList();
+        if (fromDiscordMessage.Count != 2)
+        {
+            socketMessage.Author.SendMessageAsync($"To verify your character name, send me your character name and world.{Environment.NewLine}For example: If your character `Haurchefant Greystone` is on the `Zalera` server, enter `Haurchefant Greystone@Zalera` below.").Wait();
+            return Task.CompletedTask;
+        }
+        
+        _usernameMapping.ReceiveFromDiscord(new Character(fromDiscordMessage.First(), fromDiscordMessage.Last()), socketMessage.Author.Username, out var message);
+        socketMessage.Author.SendMessageAsync(message).Wait();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleFFXIVMessage(SocketUserMessage socketMessage)
     {
         if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
         {
@@ -84,7 +123,7 @@ public class Discord : IDiscordConsumer
 
         fullMessage = fullMessage.ReplaceLineEndings();
 
-        var userDisplayName = guildUser.DisplayName;
+        var userDisplayName = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
 
         _logger.LogInformation("Received message from Discord: {FullMessage}", fullMessage);
         foreach (var line in fullMessage.Split(Environment.NewLine))
@@ -114,6 +153,5 @@ public class Discord : IDiscordConsumer
         }
 
         return Task.CompletedTask;
-
     }
 }
