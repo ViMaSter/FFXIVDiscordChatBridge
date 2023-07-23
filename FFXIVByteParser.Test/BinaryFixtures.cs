@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FFXIVByteParser.Models;
 using Sharlayan.Core;
 
 namespace FFXIVByteParser.Test;
@@ -26,9 +27,10 @@ public class ChatLogParserTest
     public void UserReadableOutput(string fileName, byte[] actualInput, string expectedData)
     {
         // create logger
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.True);
-        CollectionAssert.AreEqual(expectedData, result);
+        Debug.Assert(result != null, "Couldn't parse FFXIV message");
+        CollectionAssert.AreEqual(expectedData, $"<{result.Character.Format(CharacterNameDisplay.WITH_WORLD)}> {result.Message}");
     }
     
     /// <summary>
@@ -41,7 +43,7 @@ public class ChatLogParserTest
     [TestCaseSource(nameof(GetChatsFromOtherCharacter))]
     public void IgnoreIrrelevantChannel(string fileName, byte[] actualInput, string expectedData)
     {
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE+"_", "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE+"_", "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
         Assert.That(result, Is.Null);
     }
@@ -53,7 +55,7 @@ public class ChatLogParserTest
     [TestCaseSource(nameof(GetChatsFromOtherCharacter))]
     public void IgnoreMessagesFromCharacterThatActsAsBot(string fileName, byte[] actualInput, string expectedData)
     {
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = "Sereth Milbana: " + System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
         Assert.That(result, Is.Null);
     }
@@ -65,9 +67,10 @@ public class ChatLogParserTest
     [TestCaseSource(nameof(GetChatsFromOwnCharacter))]
     public void ForceMessagesFromCharacterThatActsAsBot(string fileName, byte[] actualInput, string expectedData)
     {
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = "Sereth Milbana: " + System.Text.Encoding.UTF8.GetString(actualInput) + "FORCEEXEC", Code = CHANNEL_CODE}, out var result), Is.True);
-        CollectionAssert.AreEqual(expectedData, result);
+        Debug.Assert(result != null, "Couldn't parse FFXIV message");
+        CollectionAssert.AreEqual(expectedData, $"<{result.Character.Format(CharacterNameDisplay.WITH_WORLD)}> {result.Message}");
     }
     
     /// <summary>
@@ -77,7 +80,7 @@ public class ChatLogParserTest
     [TestCaseSource(nameof(GetInvalidChats))]
     public void HandleInvalidChats(string fileName, byte[] actualInput, string expectedData)
     {
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
         Assert.That(result, Is.Null);
     }
@@ -89,7 +92,7 @@ public class ChatLogParserTest
     [TestCaseSource(nameof(GetEmptyChats))]
     public void HandleEmptyChats(string fileName, byte[] actualInput, string expectedData)
     {
-        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus", FFXIVByteHandler.CharacterNameDisplay.WITH_WORLD);
+        var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
         Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
         Assert.That(result, Is.Null);
     }

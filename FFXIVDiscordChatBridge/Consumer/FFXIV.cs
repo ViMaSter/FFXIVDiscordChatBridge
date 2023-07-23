@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using FFXIVByteParser;
+using FFXIVByteParser.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sharlayan;
@@ -18,21 +19,43 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private int _previousOffset;
     private readonly ILogger<FFXIV> _logger;
     private readonly ILogger<FFXIVByteHandler> _byteHandlerLogger;
+    private readonly UsernameMapping _usernameMapping;
+    private readonly Producer.IFFXIV _ffxivProducer;
     private FFXIVByteHandler? _handler;
+    private readonly string _worldName;
+    public Character CurrentCharacter => _handler?.CurrentCharacter ?? throw new Exception("FFXIVByteHandler not yet initialized");
     
-    private delegate Task OnNewChatMessageDelegate(string message);
+    private delegate Task OnNewChatMessageDelegate(FromFFXIV message);
 
     private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
-    public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscordProducer discordProducer)
+    public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscord discordProducer, UsernameMapping usernameMapping, Producer.IFFXIV ffxivProducer)
     {
         _logger = logger;
         _byteHandlerLogger = byteHandlerLogger;
+        _usernameMapping = usernameMapping;
+        _ffxivProducer = ffxivProducer;
         _channelCode = configuration["ffxivChannelCode"] ?? throw new Exception("ffxivChannelCode not found");
+        _worldName = configuration["ffxivWorldName"] ?? throw new Exception("ffxivWorldName not found");
         OnNewChatMessage = async (message) =>
         {
-            await discordProducer.Send(message);
+            switch (message)
+            {
+                case FromMonitoredChannel:
+                    await discordProducer.Send($"<{_usernameMapping.GetMappingFromFFXIVUsername(message.Character)}> {message.Message}");
+                    break;
+                case FromTellMessage:
+                    HandleAuthorizationMessage(message);
+                    break;
+            }
         };
+    }
+
+    private void HandleAuthorizationMessage(FromFFXIV message)
+    {
+        var discordUsername = message.Message.Split(" ")[0];
+        _usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername, out var response);
+        _ffxivProducer.Send($"/tell {message.Character.Format(CharacterNameDisplay.WITH_WORLD)} {response}");
     }
 
 
@@ -93,7 +116,8 @@ public class FFXIV : IDisposable, IFFXIVConsumer
             throw new Exception("Can't read current player");
         }
 
-        _handler = new FFXIVByteHandler(_byteHandlerLogger, _channelCode,getCurrentPlayer.Entity.Name, "Zalera", FFXIVByteHandler.CharacterNameDisplay.WITHOUT_WORLD);
+        _handler = new FFXIVByteHandler(_byteHandlerLogger, _channelCode,getCurrentPlayer.Entity.Name, _worldName);
+        _usernameMapping.SetHostingCharacter(new Character(getCurrentPlayer.Entity.Name, _worldName));
 
         _logger.LogInformation("Player name: {PlayerName}", getCurrentPlayer.Entity.Name);
 
@@ -132,7 +156,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
                 continue;
             }
 
-            _logger.LogInformation("New chat line: {DiscordMessage}", discordMessage);
+            _logger.LogInformation("New chat line {Type}: {DiscordMessage}", discordMessage.GetType().Name, discordMessage.Message);
             await OnNewChatMessage(discordMessage);
         }
     }

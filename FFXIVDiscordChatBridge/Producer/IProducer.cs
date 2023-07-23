@@ -1,11 +1,11 @@
 namespace FFXIVDiscordChatBridge.Producer;
 
-public interface IFFXIVProducer
+public interface IFFXIV
 {
     Task Send(string message);
 }
 
-public interface IDiscordProducer
+public interface IDiscord
 {
     Task Send(string message);
 }

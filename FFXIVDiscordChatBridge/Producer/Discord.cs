@@ -67,7 +67,7 @@ public class DiscordClientWrapper : IDiscordClientWrapper
     }
 }
 
-public class Discord : IDiscordProducer
+public class Discord : IDiscord
 {
     private readonly ILogger<Discord> _logger;
     private readonly IMessageChannel _channel;

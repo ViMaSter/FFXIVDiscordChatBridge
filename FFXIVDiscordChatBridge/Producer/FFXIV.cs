@@ -6,7 +6,7 @@ using WindowsInput.Native;
 
 namespace FFXIVDiscordChatBridge.Producer;
 
-public class FFXIV : IFFXIVProducer
+public class FFXIV : IFFXIV
 {
     private readonly ILogger<FFXIV> _logger;
     private readonly InputSimulator _inputSimulator = new();
