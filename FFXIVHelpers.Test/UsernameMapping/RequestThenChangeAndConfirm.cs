@@ -1,4 +1,5 @@
 ﻿using FFXIVHelpers.Models;
+using FFXIVHelpers.Test.UsernameMapping.Stubs;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FFXIVHelpers.Test.UsernameMapping;
@@ -15,7 +16,7 @@ public class RequestThenChangeAndConfirm
     [Test]
     public void CanCreateMappingFromFFXIVRequestAnotherMappingInFFXIVAndConfirmOnDiscord()
     {
-        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance);
+        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance, new InMemoryPersistence(new List<Mapping>()));
         mapping.SetHostingCharacter(_hostingCharacter);
             
         {
@@ -52,7 +53,7 @@ public class RequestThenChangeAndConfirm
     [Test]
     public void CanCreateMappingFromDiscordRequestAnotherMappingInDiscordAndConfirmOnFFXIV()
     {
-        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance);
+        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance, new InMemoryPersistence(new List<Mapping>()));
         mapping.SetHostingCharacter(_hostingCharacter);
             
         {
