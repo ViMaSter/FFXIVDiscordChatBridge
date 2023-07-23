@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FFXIVHelpers.Test.UsernameMapping;
 
-public class RequestAndConfirm
+public class RequestAndConfirmWithDifferentCasing
 {
     private readonly Character _hostingCharacter = new("Character Name", "World");
     
     private readonly Character _requestingCharacter = new("Re'Questing Name", "World");
+    private readonly Character _requestingCharacterDifferentCasing = new("re'questing name", "world");
     private const string DiscordRequestingUsername = "Re'Questing";
 
     [Test]
@@ -27,7 +28,7 @@ public class RequestAndConfirm
         }
 
         {
-            mapping.ReceiveFromDiscord(_requestingCharacter, DiscordRequestingUsername, out var message);
+            mapping.ReceiveFromDiscord(_requestingCharacterDifferentCasing, DiscordRequestingUsername, out var message);
             Assert.Multiple(() =>
             {
                 Assert.That(string.IsNullOrEmpty(message), Is.False);
@@ -54,7 +55,7 @@ public class RequestAndConfirm
         }
 
         {
-            mapping.ReceiveFromFFXIV(_requestingCharacter, DiscordRequestingUsername, out var message);
+            mapping.ReceiveFromFFXIV(_requestingCharacterDifferentCasing, DiscordRequestingUsername, out var message);
             Assert.Multiple(() =>
             {
                 Assert.That(string.IsNullOrEmpty(message), Is.False);

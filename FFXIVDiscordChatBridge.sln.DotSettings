@@ -2,4 +2,5 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=FFXIV/@EntryIndexedValue">FFXIV</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=CHATLOG/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=PLAYERINFO/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=re_0027questing/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Zalera/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
