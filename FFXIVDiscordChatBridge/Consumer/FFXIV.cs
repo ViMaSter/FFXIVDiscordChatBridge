@@ -20,16 +20,14 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private readonly ILogger<FFXIVByteHandler> _byteHandlerLogger;
     private FFXIVByteHandler? _handler;
     
-    private delegate Task OnNewChatMessageDelegate(string message);
-
-    private OnNewChatMessageDelegate OnNewChatMessage { get; }
+    public event IFFXIVConsumer.OnNewChatMessageDelegate OnNewChatMessage;
 
     public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscordProducer discordProducer)
     {
         _logger = logger;
         _byteHandlerLogger = byteHandlerLogger;
         _channelCode = configuration["ffxivChannelCode"] ?? throw new Exception("ffxivChannelCode not found");
-        OnNewChatMessage = async (message) =>
+        OnNewChatMessage += async (message) =>
         {
             await discordProducer.Send(message);
         };
@@ -157,4 +155,5 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     {
         _memoryHandler?.Dispose();
     }
+
 }
