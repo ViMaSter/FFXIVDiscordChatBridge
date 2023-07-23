@@ -13,16 +13,18 @@ public class Discord : IDiscordConsumer
     private readonly ILogger<Discord> _logger;
     private readonly IFFXIV _ffxivProducer;
     private readonly UsernameMapping _usernameMapping;
+    private readonly DiscordEmojiConverter _discordEmojiConverter;
     private readonly IDiscordClientWrapper _discordWrapper;
     // ReSharper disable once NotAccessedField.Local - Required to manage lifetime
     private Timer? _displayNameRefreshTimer;
 
-    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping, DiscordEmojiConverter discordEmojiConverter)
     {
         _logger = logger;
         _discordWrapper = discordWrapper;
         _ffxivProducer = ffxivProducer;
         _usernameMapping = usernameMapping;
+        _discordEmojiConverter = discordEmojiConverter;
     }
 
     public Task Start()
@@ -44,8 +46,13 @@ public class Discord : IDiscordConsumer
     {
         _displayNameRefreshTimer = new Timer(async _ =>
         {
-            var users = (await _discordWrapper.Channel!.GetUsersAsync().FlattenAsync()).Select(user=>user as SocketGuildUser);
-            _usernameMapping.UpdateDisplayNameMapping(users.ToDictionary(user => user!.Username, user => user!.DisplayName));
+            var users = (await _discordWrapper.Channel!.GetUsersAsync().FlattenAsync())
+                .Select(user=>user as SocketGuildUser)
+                .Where(users=>!string.IsNullOrEmpty(users?.Username))
+                .GroupBy(users=>users!.Username)
+                .Select(users=>users.First())
+                .ToDictionary(user => user!.Username, user => user!.DisplayName);
+            _usernameMapping.UpdateDisplayNameMapping(users);
         }, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
         return Task.CompletedTask;
     }
@@ -146,6 +153,7 @@ public class Discord : IDiscordConsumer
         }
 
         fullMessage = fullMessage.ReplaceLineEndings();
+        fullMessage = _discordEmojiConverter.ReplaceEmoji(fullMessage);
 
         var userDisplayName = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
 

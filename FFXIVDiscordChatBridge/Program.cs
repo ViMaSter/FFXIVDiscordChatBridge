@@ -30,6 +30,7 @@ namespace FFXIVDiscordChatBridge
                 loggingBuilder.AddNLog();
             });
 
+            services.AddSingleton<DiscordEmojiConverter>();
             services.AddSingleton<IPersistence, FilePersistence>();
             
             services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
