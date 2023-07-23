@@ -1,21 +1,20 @@
-﻿using System.Numerics;
-using FFXIVByteParser;
-using FFXIVByteParser.Models;
+﻿using FFXIVHelpers.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 
-namespace FFXIVDiscordChatBridge.Test.UsernameMapping;
+namespace FFXIVHelpers.Test.UsernameMapping;
 
 public class RequestThenChangeAndConfirm
 {
     private readonly Character _hostingCharacter = new("Character Name", "World");
 
-    private readonly Character _requestingCharacter = new("Requesting Name", "World");
-    private readonly Character _requestingCharacter2 = new("Requesting Name2", "World");
-    private const string DISCORD_REQUESTING_USERNAME = "Requesting";
+    private readonly Character _requestingCharacter = new("Re'Questing Name", "World");
+    private readonly Character _requestingCharacter2 = new("Re'Questing Name2", "World");
+    private const string DISCORD_REQUESTING_USERNAME = "Re'Questing";
 
     [Test]
     public void CanCreateMappingFromFFXIVRequestAnotherMappingInFFXIVAndConfirmOnDiscord()
     {
-        FFXIVDiscordChatBridge.UsernameMapping mapping = new();
+        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance);
         mapping.SetHostingCharacter(_hostingCharacter);
             
         {
@@ -52,7 +51,7 @@ public class RequestThenChangeAndConfirm
     [Test]
     public void CanCreateMappingFromDiscordRequestAnotherMappingInDiscordAndConfirmOnFFXIV()
     {
-        FFXIVDiscordChatBridge.UsernameMapping mapping = new();
+        FFXIVHelpers.UsernameMapping mapping = new(NullLogger<FFXIVHelpers.UsernameMapping>.Instance);
         mapping.SetHostingCharacter(_hostingCharacter);
             
         {

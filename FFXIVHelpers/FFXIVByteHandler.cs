@@ -1,10 +1,10 @@
 ﻿using System.Text;
-using FFXIVByteParser.Models;
+using FFXIVHelpers.Models;
 using Microsoft.Extensions.Logging;
 using NLog;
 using Sharlayan.Core;
 
-namespace FFXIVByteParser;
+namespace FFXIVHelpers;
 
 public class FFXIVByteHandler
 {

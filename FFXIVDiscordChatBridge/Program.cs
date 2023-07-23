@@ -1,4 +1,5 @@
 using FFXIVDiscordChatBridge.Extensions;
+using FFXIVHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;

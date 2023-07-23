@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using FFXIVByteParser.Models;
+using FFXIVHelpers.Models;
 using Sharlayan.Core;
 
-namespace FFXIVByteParser.Test;
+namespace FFXIVHelpers.Test;
 
 public class ChatLogParserTest
 {
@@ -102,7 +102,7 @@ public class ChatLogParserTest
         var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
         return currentAssembly.GetManifestResourceNames()
             .Where(resourcePath => resourcePath.EndsWith(".binary"))
-            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVHelpers"))
             .Where(resourcePath => resourcePath.Contains("ChatsFromOtherCharacters"))
             .Select(pathToBinary => new object[] {
                 pathToBinary.Replace(".binary", ""),
@@ -116,7 +116,7 @@ public class ChatLogParserTest
         var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
         return currentAssembly.GetManifestResourceNames()
             .Where(resourcePath => resourcePath.EndsWith(".binary"))
-            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVHelpers"))
             .Where(resourcePath => resourcePath.Contains("ChatsFromOwnCharacter"))
             .Select(pathToBinary => new object[] {
                 pathToBinary.Replace(".binary", ""),
@@ -130,7 +130,7 @@ public class ChatLogParserTest
         var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
         return currentAssembly.GetManifestResourceNames()
             .Where(resourcePath => resourcePath.EndsWith(".binary"))
-            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVHelpers"))
             .Where(resourcePath => resourcePath.Contains("InvalidChats"))
             .Select(pathToBinary => new object[] {
                 pathToBinary.Replace(".binary", ""),
@@ -144,7 +144,7 @@ public class ChatLogParserTest
         var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
         return currentAssembly.GetManifestResourceNames()
             .Where(resourcePath => resourcePath.EndsWith(".binary"))
-            .Where(resourcePath => resourcePath.Contains("FFXIVByteParser"))
+            .Where(resourcePath => resourcePath.Contains("FFXIVHelpers"))
             .Where(resourcePath => resourcePath.Contains("EmptyChats"))
             .Select(pathToBinary => new object[] {
                 pathToBinary.Replace(".binary", ""),

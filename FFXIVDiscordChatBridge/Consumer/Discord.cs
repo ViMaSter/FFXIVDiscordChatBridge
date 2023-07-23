@@ -1,7 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using FFXIVByteParser.Models;
+using FFXIVHelpers.Models;
 using FFXIVDiscordChatBridge.Producer;
+using FFXIVHelpers;
 using Microsoft.Extensions.Logging;
 
 namespace FFXIVDiscordChatBridge.Consumer;
@@ -54,6 +55,7 @@ public class Discord : IDiscordConsumer
         var fromDiscordMessage = socketMessage.Content.Replace("`", "").Trim().Split("@").Select(x => x.Trim()).ToList();
         if (fromDiscordMessage.Count != 2)
         {
+            _logger.LogInformation("Received invalid username mapping message via Discord: '{Username}' sent '{Message}'", socketMessage.Author.Username, socketMessage.Content);
             socketMessage.Author.SendMessageAsync($"To verify your character name, send me your character name and world.{Environment.NewLine}For example: If your character `Haurchefant Greystone` is on the `Zalera` server, enter `Haurchefant Greystone@Zalera` below.").Wait();
             return Task.CompletedTask;
         }
