@@ -10,14 +10,7 @@ public class CharacterTests
     public void ToStringThrows()
     {
         var character = new Character("Character Name", "World");
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var cast = $"{character}";
-        });
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var cast = character.ToString();
-        });
+        Assert.That(character.ToString(), Is.EqualTo(character.Format(CharacterNameDisplay.WITH_WORLD)));
     }
     
     // handle reference comparisons
