@@ -41,8 +41,15 @@ public class Mapping
 
     public DiscordInfo Discord { get; }
 
-    [Newtonsoft.Json.JsonIgnore]
-    public string CombinedName => $"{FFXIV.Name.Format(CharacterNameDisplay.WithoutWorld)}/@{Discord.Name}";
+    public string CombinedName(Dictionary<string, string> discordDisplayNameMapping)
+    {
+        if (discordDisplayNameMapping.TryGetValue(Discord.Name, out var displayName))
+        {
+            return $"{FFXIV.Name.Format(CharacterNameDisplay.WithoutWorld)}/@{displayName}";
+        }
+
+        return $"{FFXIV.Name.Format(CharacterNameDisplay.WithoutWorld)}/@{Discord.Name}";
+    }
 
     [Newtonsoft.Json.JsonConstructor]
     private Mapping(FFXIVInfo ffxiv, DiscordInfo discord)
