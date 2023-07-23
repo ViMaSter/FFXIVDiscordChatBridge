@@ -1,5 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using Discord;
+using FFXIVDiscordChatBridge.Producer;
 using FFXIVHelpers;
 using FFXIVHelpers.Models;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +14,7 @@ using Sharlayan.Models;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
-public class FFXIV : IDisposable, IFFXIVConsumer
+public partial class FFXIV : IDisposable, IFFXIVConsumer
 {
     private readonly string _channelCode;
     private MemoryHandler? _memoryHandler;
@@ -20,7 +23,8 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private readonly ILogger<FFXIV> _logger;
     private readonly ILogger<FFXIVByteHandler> _byteHandlerLogger;
     private readonly UsernameMapping _usernameMapping;
-    private readonly Producer.IFFXIV _ffxivProducer;
+    private readonly IFFXIV _ffxivProducer;
+    private readonly IDiscordClientWrapper _discordClientWrapper;
     private FFXIVByteHandler? _handler;
     private readonly string _worldName;
     public Character CurrentCharacter => _handler?.CurrentCharacter ?? throw new Exception("FFXIVByteHandler not yet initialized");
@@ -30,26 +34,60 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
     // ReSharper disable once ContextualLoggerProblem - Passed along to FFxivByteHandler
-    public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscord discordProducer, UsernameMapping usernameMapping, Producer.IFFXIV ffxivProducer)
+    public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, IDiscord discordProducer, UsernameMapping usernameMapping, IFFXIV ffxivProducer, IDiscordClientWrapper discordClientWrapper)
     {
         _logger = logger;
         _byteHandlerLogger = byteHandlerLogger;
         _usernameMapping = usernameMapping;
         _ffxivProducer = ffxivProducer;
+        _discordClientWrapper = discordClientWrapper;
         _channelCode = configuration["ffxivChannelCode"] ?? throw new Exception("ffxivChannelCode not found");
         _worldName = configuration["ffxivWorldName"] ?? throw new Exception("ffxivWorldName not found");
         OnNewChatMessage = async (message) =>
         {
+            var convertedMessage = TranslateDiscordEmojis(message.Message);
             switch (message)
             {
                 case FromMonitoredChannel:
-                    await discordProducer.Send($"<{_usernameMapping.GetMappingFromFFXIVUsername(message.Character)}> {message.Message}");
+                    await discordProducer.Send($"<{_usernameMapping.GetMappingFromFFXIVUsername(message.Character)}> {convertedMessage}");
                     break;
                 case FromTellMessage:
                     HandleAuthorizationMessage(message);
                     break;
             }
         };
+    }
+
+    private string TranslateDiscordEmojis(string input)
+    {
+        var convertedMessage = input;
+        var emotes = (_discordClientWrapper.Channel as IGuildChannel)!.Guild.Emotes;
+        
+        foreach (var match in EmojiRegex().Matches(input))
+        {
+            if (match == null)
+            {
+                continue;
+            }
+
+            var matchAsString = match.ToString();
+            
+            if (string.IsNullOrEmpty(matchAsString))
+            {
+                continue;
+            }
+
+            var emoteName = matchAsString.Trim(':');
+            var matchingEmote = emotes.FirstOrDefault(e => e.Name == emoteName);
+            if (matchingEmote == null)
+            {
+                continue;
+            }
+
+            convertedMessage = convertedMessage.Replace(matchAsString, $"<{(matchingEmote.Animated?"a":"")}:{matchingEmote.Name}:{matchingEmote.Id}>");
+        }
+        
+        return convertedMessage;
     }
 
     private void HandleAuthorizationMessage(FromFFXIV message)
@@ -184,4 +222,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     {
         _memoryHandler?.Dispose();
     }
+
+    [GeneratedRegex(":[a-zA-Z0-9_]+:")]
+    private static partial Regex EmojiRegex();
 }
