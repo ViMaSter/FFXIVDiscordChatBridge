@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0"></a>
+## [1.4.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.4.0) (2023-7-23)
+
+### Features
+
+* Handles sending server-specific Discord emotes without the use of IDs ([21c804a](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/21c804a4150fa052c620a7ccee0541d41e81842b))
+* Translate global Discord emoji into text ([79366a6](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/79366a66572b4c8f739c7f6b16bea2f0ed376b26))
+
 <a name="1.3.0"></a>
 ## [1.3.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.3.0) (2023-7-23)
 
