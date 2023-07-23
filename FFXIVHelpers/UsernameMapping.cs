@@ -11,6 +11,7 @@ public class UsernameMapping
 
     private readonly ILogger<UsernameMapping> _logger;
     private readonly IPersistence _persistence;
+    private readonly Dictionary<string,string> _displayNameMappings = new();
 
     public UsernameMapping(ILogger<UsernameMapping> logger, IPersistence persistence)
     {
@@ -87,7 +88,7 @@ public class UsernameMapping
             string.Equals(mapping.Discord.Name, discordName, StringComparison.CurrentCultureIgnoreCase) && 
             mapping.Discord.ConfirmationState == ConfirmationState.Confirmed && 
             mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed);
-        return confirmedMappings?.CombinedName;
+        return confirmedMappings?.CombinedName(_displayNameMappings);
     }
     
     public string GetMappingFromFFXIVUsername(Character ffxivName)
@@ -96,11 +97,19 @@ public class UsernameMapping
             Equals(mapping.FFXIV.Name, ffxivName) && 
             mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed && 
             mapping.Discord.ConfirmationState == ConfirmationState.Confirmed);
-        return confirmedMappings?.CombinedName ?? ffxivName.Format(CharacterNameDisplay.WithoutWorld);
+        return confirmedMappings?.CombinedName(_displayNameMappings) ?? ffxivName.Format(CharacterNameDisplay.WithoutWorld);
     }
 
     public void SetHostingCharacter(Character character)
     {
         _hostingFFXIVCharacter = character;
+    }
+
+    public void UpdateDisplayNameMapping(IDictionary<string, string> usernameToDisplayName)
+    {
+        foreach (var (username, displayName) in usernameToDisplayName)
+        {
+            _displayNameMappings[username] = displayName;
+        }
     }
 }

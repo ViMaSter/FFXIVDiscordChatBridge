@@ -29,7 +29,7 @@ public class DiscordClientWrapper : IDiscordClientWrapper
 
         Client = new DiscordSocketClient(new DiscordSocketConfig
         {
-            GatewayIntents = GatewayIntents.DirectMessages | GatewayIntents.MessageContent | GatewayIntents.Guilds | GatewayIntents.GuildMessages,
+            GatewayIntents = GatewayIntents.DirectMessages | GatewayIntents.MessageContent | GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildMembers | GatewayIntents.GuildPresences,
             LogLevel = LogSeverity.Verbose
         });
         Client.Log += (message) =>

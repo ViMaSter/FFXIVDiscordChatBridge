@@ -4,6 +4,7 @@ using FFXIVHelpers.Models;
 using FFXIVDiscordChatBridge.Producer;
 using FFXIVHelpers;
 using Microsoft.Extensions.Logging;
+using Timer = System.Threading.Timer;
 
 namespace FFXIVDiscordChatBridge.Consumer;
 
@@ -13,6 +14,8 @@ public class Discord : IDiscordConsumer
     private readonly IFFXIV _ffxivProducer;
     private readonly UsernameMapping _usernameMapping;
     private readonly IDiscordClientWrapper _discordWrapper;
+    // ReSharper disable once NotAccessedField.Local - Required to manage lifetime
+    private Timer? _displayNameRefreshTimer;
 
     public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping)
     {
@@ -25,7 +28,26 @@ public class Discord : IDiscordConsumer
     public Task Start()
     {
         _discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
+        if (_discordWrapper.Client.ConnectionState != ConnectionState.Connected)
+        {
+            _discordWrapper.Client.Ready += SetupDisplayNameLoop;
+        }
+        else
+        {
+            SetupDisplayNameLoop().Wait();
+        }
+
         return Task.Delay(-1);
+    }
+
+    private Task SetupDisplayNameLoop()
+    {
+        _displayNameRefreshTimer = new Timer(async _ =>
+        {
+            var users = (await _discordWrapper.Channel!.GetUsersAsync().FlattenAsync()).Select(user=>user as SocketGuildUser);
+            _usernameMapping.UpdateDisplayNameMapping(users.ToDictionary(user => user!.Username, user => user!.DisplayName));
+        }, null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
+        return Task.CompletedTask;
     }
 
     private Task ClientOnMessageReceived(SocketMessage socketMessage)
