@@ -1,7 +1,18 @@
-﻿namespace FFXIVHelpers.Models;
+﻿using Newtonsoft.Json;
+
+namespace FFXIVHelpers.Models;
 
 public class Character
 {
+    public string CharacterName { get; }
+    public string WorldName { get; }
+    
+    public Character(string characterName, string worldName)
+    {
+        CharacterName = characterName;
+        WorldName = worldName;
+    }
+    
     private bool Equals(Character other)
     {
         return string.Equals(CharacterName, other.CharacterName, StringComparison.InvariantCultureIgnoreCase) && string.Equals(WorldName, other.WorldName, StringComparison.InvariantCultureIgnoreCase);
@@ -13,12 +24,6 @@ public class Character
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != GetType()) return false;
         return Equals((Character)obj);
-    }
-
-    public Character(string characterName, string worldName)
-    {
-        CharacterName = characterName;
-        WorldName = worldName;
     }
 
     public string Format(CharacterNameDisplay characterNameDisplay)
@@ -35,7 +40,4 @@ public class Character
     {
         return Format(CharacterNameDisplay.WITH_WORLD);
     }
-
-    public string CharacterName { get; }
-    public string WorldName { get; }
 }

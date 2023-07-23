@@ -1,5 +1,6 @@
 using FFXIVDiscordChatBridge.Extensions;
 using FFXIVHelpers;
+using FFXIVHelpers.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -28,6 +29,8 @@ namespace FFXIVDiscordChatBridge
                 loggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                 loggingBuilder.AddNLog();
             });
+
+            services.AddSingleton<IPersistence, FilePersistence>();
             
             services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
             

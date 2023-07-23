@@ -1,4 +1,5 @@
 ﻿using FFXIVHelpers.Models;
+using FFXIVHelpers.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace FFXIVHelpers;
@@ -6,87 +7,47 @@ namespace FFXIVHelpers;
 public class UsernameMapping
 {
     private Character? _hostingFFXIVCharacter;
-    private readonly ILogger<UsernameMapping> _logger;
+    private List<Mapping> Mappings { get; }
 
-    public UsernameMapping(ILogger<UsernameMapping> logger)
+    private readonly ILogger<UsernameMapping> _logger;
+    private readonly IPersistence _persistence;
+
+    public UsernameMapping(ILogger<UsernameMapping> logger, IPersistence persistence)
     {
         _logger = logger;
-    }
+        _persistence = persistence;
 
-    private class Mapping
-    {
-        private Mapping()
-        {
-        }
-        
-        public static Mapping CreateFromDiscord(string discordName, Character ffxivName)
-        {
-            return new Mapping()
-            {
-                Discord = (discordName, ConfirmationState.Confirmed),
-                FFXIV = (ffxivName, ConfirmationState.NotConfirmed)
-            };
-        }
-        
-        public static Mapping CreateFromFFXIV(string discordName, Character ffxivName)
-        {
-            return new Mapping()
-            {
-                Discord = (discordName, ConfirmationState.NotConfirmed),
-                FFXIV = (ffxivName, ConfirmationState.Confirmed)
-            };
-        }
-        
-        public void ConfirmFFXIVUsername()
-        {
-            FFXIV = (FFXIV.name, ConfirmationState.Confirmed);
-        }
-        
-        public void ConfirmDiscordUsername()
-        {
-            Discord = (Discord.name, ConfirmationState.Confirmed);
-        }
-
-        public (Character name, ConfirmationState confirmationState) FFXIV { get; private set; }
-
-        public (string? name, ConfirmationState confirmationState) Discord { get; private set; }
-
-        public string CombinedName => $"{FFXIV.name.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{Discord.name}";
-    }
-    private List<Mapping> Mappings { get; } = new();
-
-    private enum ConfirmationState
-    {
-        NotConfirmed = 0,
-        Confirmed,
+        Mappings = persistence.LoadMappings();
     }
     
     public bool ReceiveFromFFXIV(Character ffxivName, string discordName, out string message)
     {
         var unconfirmedMatchingAccount = Mappings.FirstOrDefault(mapping => 
-            mapping.Discord.name?.ToLower() == discordName.ToLower() &&
-            mapping.Discord.confirmationState == ConfirmationState.Confirmed &&
-            Equals(mapping.FFXIV.name, ffxivName) &&
-            mapping.FFXIV.confirmationState == ConfirmationState.NotConfirmed);
+            mapping.Discord.Name?.ToLower() == discordName.ToLower() &&
+            mapping.Discord.ConfirmationState == ConfirmationState.Confirmed &&
+            Equals(mapping.FFXIV.Name, ffxivName) &&
+            mapping.FFXIV.ConfirmationState == ConfirmationState.NotConfirmed);
         if (unconfirmedMatchingAccount != null)
         {
-            _logger.LogInformation("Confirmed link of {DiscordName} to {FFXIVName} inside FFXIV", discordName, ffxivName);
-            unconfirmedMatchingAccount.ConfirmFFXIVUsername();
+            _logger.LogInformation("Confirmed link of {DiscordName} to {FfxivName} inside FFXIV", discordName, ffxivName);
+            unconfirmedMatchingAccount.FFXIV.Confirm();
+            _persistence.WriteMappingsToFile(Mappings);
             message = $"Successfully linked your Discord username to your FFXIV character. You will now be shown as <{ffxivName.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{discordName}>.";
             return true;
         }
         
         var unconfirmedDiscordAccount = Mappings.FirstOrDefault(mapping => 
-            mapping.Discord.name?.ToLower() == discordName.ToLower() &&
-            mapping.Discord.confirmationState == ConfirmationState.NotConfirmed);
+            mapping.Discord.Name?.ToLower() == discordName.ToLower() &&
+            mapping.Discord.ConfirmationState == ConfirmationState.NotConfirmed);
         if (unconfirmedDiscordAccount != null)
         {
-            _logger.LogInformation("Removed unconfirmed link of {DiscordName} to {FFXIVName} inside FFXIV", discordName, ffxivName);
+            _logger.LogInformation("Removed unconfirmed link of {DiscordName} to {FfxivName} inside FFXIV", discordName, ffxivName);
             Mappings.Remove(unconfirmedDiscordAccount);
         }
         
-        _logger.LogInformation("Created unconfirmed link of {DiscordName} to {FFXIVName} inside FFXIV", discordName, ffxivName);
+        _logger.LogInformation("Created unconfirmed link of {DiscordName} to {FfxivName} inside FFXIV", discordName, ffxivName);
         Mappings.Add(Mapping.CreateFromFFXIV(discordName, ffxivName));
+        _persistence.WriteMappingsToFile(Mappings);
         message = $"To confirm your Final Fantasy character, send your character and world name to the bot as a direct message on discord: `{ffxivName.Format(CharacterNameDisplay.WITH_WORLD)}`";
         return false;
     }
@@ -94,47 +55,49 @@ public class UsernameMapping
     public void ReceiveFromDiscord(Character ffxivName, string discordName, out string message)
     {
         var unconfirmedMatchingAccount = Mappings.FirstOrDefault(mapping => 
-            Equals(mapping.FFXIV.name, ffxivName) &&
-            mapping.FFXIV.confirmationState == ConfirmationState.Confirmed &&
-            mapping.Discord.name?.ToLower() == discordName.ToLower() &&
-            mapping.Discord.confirmationState == ConfirmationState.NotConfirmed);
+            Equals(mapping.FFXIV.Name, ffxivName) &&
+            mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed &&
+            mapping.Discord.Name?.ToLower() == discordName.ToLower() &&
+            mapping.Discord.ConfirmationState == ConfirmationState.NotConfirmed);
         if (unconfirmedMatchingAccount != null)
         {
-            _logger.LogInformation("Confirmed link of {DiscordName} to {FFXIVName} inside Discord", discordName, ffxivName);
-            unconfirmedMatchingAccount.ConfirmDiscordUsername();
+            _logger.LogInformation("Confirmed link of {DiscordName} to {FfxivName} inside Discord", discordName, ffxivName);
+            unconfirmedMatchingAccount.Discord.Confirm();
+            _persistence.WriteMappingsToFile(Mappings);
             message = $"Successfully linked your Discord username to your FFXIV character. You will now be shown as <{ffxivName.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{discordName}>.";
             return;
         }
         
         var unconfirmedDiscordAccount = Mappings.FirstOrDefault(mapping => 
-            Equals(mapping.FFXIV.name, ffxivName) &&
-            mapping.FFXIV.confirmationState == ConfirmationState.NotConfirmed);
+            Equals(mapping.FFXIV.Name, ffxivName) &&
+            mapping.FFXIV.ConfirmationState == ConfirmationState.NotConfirmed);
         if (unconfirmedDiscordAccount != null)
         {
-            _logger.LogInformation("Removed unconfirmed link of {DiscordName} to {FFXIVName} inside Discord", discordName, ffxivName);
+            _logger.LogInformation("Removed unconfirmed link of {DiscordName} to {FfxivName} inside Discord", discordName, ffxivName);
             Mappings.Remove(unconfirmedDiscordAccount);
         }
         
-        _logger.LogInformation("Created unconfirmed link of {DiscordName} to {FFXIVName} inside Discord", discordName, ffxivName);
+        _logger.LogInformation("Created unconfirmed link of {DiscordName} to {FfxivName} inside Discord", discordName, ffxivName);
         Mappings.Add(Mapping.CreateFromDiscord(discordName, ffxivName));
-        message = $"To confirm your Discord username, log into {ffxivName.Format(CharacterNameDisplay.WITH_WORLD)} and enter the following into the FFXIV chat: `/tell {_hostingFFXIVCharacter.Format(CharacterNameDisplay.WITH_WORLD)} {discordName}`";
+        _persistence.WriteMappingsToFile(Mappings);
+        message = $"To confirm your Discord username, log into {ffxivName.Format(CharacterNameDisplay.WITH_WORLD)} and enter the following into the FFXIV chat: `/tell {_hostingFFXIVCharacter!.Format(CharacterNameDisplay.WITH_WORLD)} {discordName}`";
     }
     
     public string? GetMappingFromDiscordUsername(string discordName)
     {
         var confirmedMappings = Mappings.FirstOrDefault(mapping => 
-            mapping.Discord.name?.ToLower() == discordName.ToLower() && 
-            mapping.Discord.confirmationState == ConfirmationState.Confirmed && 
-            mapping.FFXIV.confirmationState == ConfirmationState.Confirmed);
+            mapping.Discord.Name?.ToLower() == discordName.ToLower() && 
+            mapping.Discord.ConfirmationState == ConfirmationState.Confirmed && 
+            mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed);
         return confirmedMappings?.CombinedName;
     }
     
     public string GetMappingFromFFXIVUsername(Character ffxivName)
     {
         var confirmedMappings = Mappings.FirstOrDefault(mapping => 
-            Equals(mapping.FFXIV.name, ffxivName) && 
-            mapping.FFXIV.confirmationState == ConfirmationState.Confirmed && 
-            mapping.Discord.confirmationState == ConfirmationState.Confirmed);
+            Equals(mapping.FFXIV.Name, ffxivName) && 
+            mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed && 
+            mapping.Discord.ConfirmationState == ConfirmationState.Confirmed);
         return confirmedMappings?.CombinedName ?? ffxivName.Format(CharacterNameDisplay.WITHOUT_WORLD);
     }
 
