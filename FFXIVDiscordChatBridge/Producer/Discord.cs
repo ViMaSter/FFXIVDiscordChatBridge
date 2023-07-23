@@ -34,6 +34,7 @@ public class DiscordClientWrapper : IDiscordClientWrapper
         });
         Client.Log += (message) =>
         {
+            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem - Required to redirect logs to NLog
             _logger.Log(message.Severity.ToNLogSeverity(), message.Message);
             return Task.CompletedTask;
         };
@@ -81,7 +82,7 @@ public class Discord : IDiscord
     public async Task Send(string content)
     {
         _logger.LogInformation("Sending message to Discord: {Content}", content);
-        var a = await _channel.SendMessageAsync(content);
+        await _channel.SendMessageAsync(content);
         _logger.LogInformation("Send message to Discord: {Content}", content);
     }
 }

@@ -9,8 +9,8 @@ public class FFXIVByteHandler
 {
     private readonly ILogger<FFXIVByteHandler> _logger;
     private readonly string _chatChannelCode;
-    private const string TellChatReceivingChannel = "000D";
-    private IEnumerable<string> MonitoredChannels => new[]{_chatChannelCode, TellChatReceivingChannel};
+    private const string TELL_CHAT_RECEIVING_CHANNEL = "000D";
+    private IEnumerable<string> MonitoredChannels => new[]{_chatChannelCode, TELL_CHAT_RECEIVING_CHANNEL};
     public Character CurrentCharacter { get; }
 
     public FFXIVByteHandler(ILogger<FFXIVByteHandler> logger, string chatChannelCode, string playerName, string worldName)
@@ -119,47 +119,47 @@ public class FFXIVByteHandler
         }
     }
 
-    public class PFLinkReplacer
+    public class PfLinkReplacer
     {
-        private static readonly byte?[] PFLinkStartPattern = { 0x02, 0x27, 0x08, 0x0A };
-        private static readonly byte?[] PFLinkEndPattern = { 0x01, 0x03 };
+        private static readonly byte?[] PfLinkStartPattern = { 0x02, 0x27, 0x08, 0x0A };
+        private static readonly byte?[] PfLinkEndPattern = { 0x01, 0x03 };
 
-        private static readonly byte?[] PFNameStartPattern = { 0x48, 0x02, 0x01, 0x03 };
-        private static readonly byte?[] PFNameEndPattern = { 0x20, 0x02, 0x12, 0x02, 0x59, 0x03, 0x02, 0x27, 0x07 };
+        private static readonly byte?[] PfNameStartPattern = { 0x48, 0x02, 0x01, 0x03 };
+        private static readonly byte?[] PfNameEndPattern = { 0x20, 0x02, 0x12, 0x02, 0x59, 0x03, 0x02, 0x27, 0x07 };
 
-        public struct PFReplacement
+        public struct PfReplacement
         {
             public int StartIndex;
             public int EndIndex;
-            private string _rawPFEntry;
-            public string PFEntry
+            private string _rawPfEntry;
+            public string PfEntry
             {
-                get => $"{{{_rawPFEntry}}}";
-                set => _rawPFEntry = value;
+                get => $"{{{_rawPfEntry}}}";
+                set => _rawPfEntry = value;
             }
         }
 
-        private static List<PFReplacement> GetReplacementsFromText(byte[] rawMessage)
+        private static List<PfReplacement> GetReplacementsFromText(byte[] rawMessage)
         {
-            var result = new List<PFReplacement>();
+            var result = new List<PfReplacement>();
 
-            var itemLinkStartPositions = rawMessage.Locate(PFLinkStartPattern);
+            var itemLinkStartPositions = rawMessage.Locate(PfLinkStartPattern);
 
             foreach (var itemLinkStartPosition in itemLinkStartPositions)
             {
-                var itemNameEndPosition = rawMessage.Skip(itemLinkStartPosition).ToArray().Locate(PFNameEndPattern)[0];
+                var itemNameEndPosition = rawMessage.Skip(itemLinkStartPosition).ToArray().Locate(PfNameEndPattern)[0];
 
                 var itemLinkBuffer = rawMessage.Skip(itemLinkStartPosition).Take(itemNameEndPosition).ToArray();
-                var itemNameStartPosition = itemLinkBuffer.Locate(PFNameStartPattern).Last() + PFNameStartPattern.Length;
+                var itemNameStartPosition = itemLinkBuffer.Locate(PfNameStartPattern).Last() + PfNameStartPattern.Length;
                 var itemName = itemLinkBuffer.Skip(itemNameStartPosition).Take(itemNameEndPosition).ToArray();
 
-                var fullStop = rawMessage.Skip(itemLinkStartPosition + itemNameStartPosition).ToArray().Locate(PFLinkEndPattern)[0];
+                var fullStop = rawMessage.Skip(itemLinkStartPosition + itemNameStartPosition).ToArray().Locate(PfLinkEndPattern)[0];
 
-                result.Add(new PFReplacement
+                result.Add(new PfReplacement
                 {
                     StartIndex = itemLinkStartPosition,
-                    EndIndex = itemLinkStartPosition + itemNameStartPosition + fullStop + PFLinkEndPattern.Length,
-                    PFEntry = Encoding.UTF8.GetString(itemName),
+                    EndIndex = itemLinkStartPosition + itemNameStartPosition + fullStop + PfLinkEndPattern.Length,
+                    PfEntry = Encoding.UTF8.GetString(itemName),
                 });
             }
 
@@ -177,7 +177,7 @@ public class FFXIVByteHandler
             foreach (var replacement in replacements)
             {
                 var before = new ArraySegment<byte>(messageCopy, 0, replacement.StartIndex);
-                var mid = Encoding.UTF8.GetBytes(replacement.PFEntry);
+                var mid = Encoding.UTF8.GetBytes(replacement.PfEntry);
                 var after = new ArraySegment<byte>(messageCopy, replacement.EndIndex, messageCopy.Length - (replacement.EndIndex));
                 messageCopy = before.Concat(mid).Concat(after).ToArray();
             }
@@ -195,7 +195,7 @@ public class FFXIVByteHandler
             return false;
         }
         
-        var isTell = chatLogItem.Code == TellChatReceivingChannel;
+        var isTell = chatLogItem.Code == TELL_CHAT_RECEIVING_CHANNEL;
 
         if (chatLogItem.Line.StartsWith(CurrentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
         {
@@ -204,10 +204,11 @@ public class FFXIVByteHandler
             return false;
         }
         
+        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem - This is a log message, not a template
         _logger.LogTrace(BitConverter.ToString(chatLogItem.Bytes));
 
         var utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
-        utf8Message = PFLinkReplacer.ReplaceItemReferences(utf8Message);
+        utf8Message = PfLinkReplacer.ReplaceItemReferences(utf8Message);
 
         var split = Split(utf8Message, 0x1F);
 

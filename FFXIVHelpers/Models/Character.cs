@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace FFXIVHelpers.Models;
+﻿namespace FFXIVHelpers.Models;
 
 public class Character
 {
@@ -26,9 +24,14 @@ public class Character
         return Equals((Character)obj);
     }
 
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(CharacterName, WorldName);
+    }
+
     public string Format(CharacterNameDisplay characterNameDisplay)
     {
-        if (characterNameDisplay == CharacterNameDisplay.WITH_WORLD)
+        if (characterNameDisplay == CharacterNameDisplay.WithWorld)
         {
             return $"{CharacterName}@{WorldName}";
         }
@@ -38,6 +41,6 @@ public class Character
 
     public override string ToString()
     {
-        return Format(CharacterNameDisplay.WITH_WORLD);
+        return Format(CharacterNameDisplay.WithWorld);
     }
 }

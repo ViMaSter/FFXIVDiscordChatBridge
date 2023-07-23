@@ -25,8 +25,8 @@ public class CanAccessDataFromPersistence
         {
             Assert.Multiple(() =>
             {
-                Assert.That(mappings.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{DISCORD_REQUESTING_USERNAME}"));
-                Assert.That(mappings.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{DISCORD_REQUESTING_USERNAME}"));
+                Assert.That(mappings.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
+                Assert.That(mappings.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
             });
         }
     }

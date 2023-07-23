@@ -29,6 +29,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
 
     private OnNewChatMessageDelegate OnNewChatMessage { get; }
 
+    // ReSharper disable once ContextualLoggerProblem - Passed along to FFxivByteHandler
     public FFXIV(ILogger<FFXIV> logger, ILogger<FFXIVByteHandler> byteHandlerLogger, IConfiguration configuration, Producer.IDiscord discordProducer, UsernameMapping usernameMapping, Producer.IFFXIV ffxivProducer)
     {
         _logger = logger;
@@ -56,7 +57,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
         var discordUsername = message.Message.Split(" ")[0];
         if (_usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername, out var response))
         {
-            _ffxivProducer.Send($"{message.Character.Format(CharacterNameDisplay.WITHOUT_WORLD)} has linked their account to @{discordUsername}");
+            _ffxivProducer.Send($"{message.Character.Format(CharacterNameDisplay.WithoutWorld)} has linked their account to @{discordUsername}");
         }
     }
 

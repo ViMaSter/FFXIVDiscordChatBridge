@@ -10,10 +10,9 @@ public class CharacterTests
     public void ToStringThrows()
     {
         var character = new Character("Character Name", "World");
-        Assert.That(character.ToString(), Is.EqualTo(character.Format(CharacterNameDisplay.WITH_WORLD)));
+        Assert.That(character.ToString(), Is.EqualTo(character.Format(CharacterNameDisplay.WithWorld)));
     }
     
-    // handle reference comparisons
     [Test]
     public void ReferenceComparison()
     {
@@ -31,5 +30,19 @@ public class CharacterTests
             Assert.That(character.Equals(new Character("Character Name2", "World")), Is.False);
             Assert.That(character.Equals(new Character("Character Name2", "World2")), Is.False);
         });
+    }
+    
+    // handle hash map usage
+    [Test]
+    public void GetHashCodeThrows()
+    {
+        // add same object twice to hashmap and assert that it is only added once
+        var character = new Character("Character Name", "World");
+        var hashSet = new HashSet<Character>
+        {
+            character,
+            character
+        };
+        Assert.That(hashSet, Has.Count.EqualTo(1));
     }
 }

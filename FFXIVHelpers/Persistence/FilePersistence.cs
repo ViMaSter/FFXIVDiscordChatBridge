@@ -1,7 +1,6 @@
 ﻿using FFXIVHelpers.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 
 namespace FFXIVHelpers.Persistence;
 

@@ -14,7 +14,7 @@ public class NUnitLogger : ILogger<FFXIVByteHandler>
         return true;
     }
 
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull
     {
         throw new NotImplementedException();
     }
