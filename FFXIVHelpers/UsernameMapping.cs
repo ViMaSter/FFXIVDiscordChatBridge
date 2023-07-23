@@ -20,7 +20,7 @@ public class UsernameMapping
         Mappings = persistence.LoadMappings();
     }
     
-    public bool ReceiveFromFFXIV(Character ffxivName, string discordName, out string message)
+    public bool ReceiveFromFFXIV(Character ffxivName, string discordName)
     {
         var unconfirmedMatchingAccount = Mappings.FirstOrDefault(mapping => 
             string.Equals(mapping.Discord.Name, discordName, StringComparison.CurrentCultureIgnoreCase) &&
@@ -32,7 +32,6 @@ public class UsernameMapping
             _logger.LogInformation("Confirmed link of {DiscordName} to {FfxivName} inside FFXIV", discordName, ffxivName);
             unconfirmedMatchingAccount.FFXIV.Confirm();
             _persistence.WriteMappingsToFile(Mappings);
-            message = $"Successfully linked your Discord username to your FFXIV character. You will now be shown as <{ffxivName.Format(CharacterNameDisplay.WithoutWorld)}/@{discordName}>.";
             return true;
         }
         
@@ -48,7 +47,6 @@ public class UsernameMapping
         _logger.LogInformation("Created unconfirmed link of {DiscordName} to {FfxivName} inside FFXIV", discordName, ffxivName);
         Mappings.Add(Mapping.CreateFromFFXIV(discordName, ffxivName));
         _persistence.WriteMappingsToFile(Mappings);
-        message = $"To confirm your Final Fantasy character, send your character and world name to the bot as a direct message on discord: `{ffxivName.Format(CharacterNameDisplay.WithWorld)}`";
         return false;
     }
     

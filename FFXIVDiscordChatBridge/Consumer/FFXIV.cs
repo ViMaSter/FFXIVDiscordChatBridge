@@ -55,7 +55,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private void HandleAuthorizationMessage(FromFFXIV message)
     {
         var discordUsername = message.Message.Split(" ")[0];
-        if (_usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername, out var response))
+        if (_usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername))
         {
             _ffxivProducer.Send($"{message.Character.Format(CharacterNameDisplay.WithoutWorld)} has linked their account to @{discordUsername}");
         }
