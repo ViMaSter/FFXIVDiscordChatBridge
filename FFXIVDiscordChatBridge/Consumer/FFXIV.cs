@@ -54,8 +54,10 @@ public class FFXIV : IDisposable, IFFXIVConsumer
     private void HandleAuthorizationMessage(FromFFXIV message)
     {
         var discordUsername = message.Message.Split(" ")[0];
-        _usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername, out var response);
-        _ffxivProducer.Send($"/tell {message.Character.Format(CharacterNameDisplay.WITH_WORLD)} {response}");
+        if (_usernameMapping.ReceiveFromFFXIV(message.Character, discordUsername, out var response))
+        {
+            _ffxivProducer.Send($"{message.Character.Format(CharacterNameDisplay.WITHOUT_WORLD)} has linked their account to @{discordUsername}");
+        }
     }
 
 
@@ -87,7 +89,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
         var startedAt = DateTime.Now;
         while (!(_memoryHandler.Scanner.Locations.ContainsKey("CHATLOG") && _memoryHandler.Scanner.Locations.ContainsKey("PLAYERINFO")))
         {
-            Thread.Sleep(250);
+            Thread.Sleep(500);
             if (DateTime.Now - startedAt > TimeSpan.FromSeconds(30))
             {
                 throw new Exception("Memory scanning failed");
@@ -111,7 +113,7 @@ public class FFXIV : IDisposable, IFFXIVConsumer
 
         var getCurrentPlayer = _memoryHandler.Reader.GetCurrentPlayer();
         
-        if (getCurrentPlayer.Entity == null)
+        if (string.IsNullOrEmpty(getCurrentPlayer.Entity.Name))
         {
             throw new Exception("Can't read current player");
         }

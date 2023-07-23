@@ -56,7 +56,7 @@ public class UsernameMapping
         Confirmed,
     }
     
-    public void ReceiveFromFFXIV(Character ffxivName, string discordName, out string message)
+    public bool ReceiveFromFFXIV(Character ffxivName, string discordName, out string message)
     {
         var unconfirmedMatchingAccount = Mappings.FirstOrDefault(mapping => 
             mapping.Discord.name == discordName &&
@@ -67,7 +67,7 @@ public class UsernameMapping
         {
             unconfirmedMatchingAccount.ConfirmFFXIVUsername();
             message = $"Successfully linked your Discord username to your FFXIV username. You will now be shown as <{ffxivName.Format(CharacterNameDisplay.WITHOUT_WORLD)}/@{discordName}>.";
-            return;
+            return true;
         }
         
         var unconfirmedDiscordAccount = Mappings.FirstOrDefault(mapping => 
@@ -80,6 +80,7 @@ public class UsernameMapping
         
         Mappings.Add(Mapping.CreateFromFFXIV(discordName, ffxivName));
         message = $"To confirm your Final Fantasy character, send your character and world name to the bot as a direct message on discord: `{ffxivName.Format(CharacterNameDisplay.WITH_WORLD)}`";
+        return false;
     }
     
     public void ReceiveFromDiscord(Character ffxivName, string discordName, out string message)
