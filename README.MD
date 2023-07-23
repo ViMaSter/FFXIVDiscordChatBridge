@@ -2,6 +2,8 @@
 
 Connect a Discord channel and FFXIV in-game chat channel.
 
+![image](https://i.vimaster.de/direct/Zf9KKYLhu4.png)
+
 > **Note**
 > This app requires a dedicated FFXIV client running on Windows with uninterrupted keyboard input.  
 > It is recommended to set up a Windows Service with VNC, to ensure a Windows user always remains logged into the game.
