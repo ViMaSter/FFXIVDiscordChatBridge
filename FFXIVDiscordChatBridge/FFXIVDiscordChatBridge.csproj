@@ -30,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FFXIVByteParser\FFXIVByteParser.csproj" />
+      <ProjectReference Include="..\FFXIVHelpers\FFXIVHelpers.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace FFXIVByteParser.Models;
+﻿namespace FFXIVHelpers.Models;
 
 public abstract class FromFFXIV
 {

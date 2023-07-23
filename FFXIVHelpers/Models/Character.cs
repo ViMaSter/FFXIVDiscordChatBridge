@@ -1,4 +1,4 @@
-﻿namespace FFXIVByteParser.Models;
+﻿namespace FFXIVHelpers.Models;
 
 public record Character(string CharacterName, string WorldName)
 {

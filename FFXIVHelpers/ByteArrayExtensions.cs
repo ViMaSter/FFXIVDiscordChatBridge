@@ -1,4 +1,4 @@
-namespace FFXIVByteParser;
+namespace FFXIVHelpers;
 
 internal static class ByteArrayExtensions
 {

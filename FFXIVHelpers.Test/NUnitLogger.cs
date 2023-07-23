@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace FFXIVByteParser.Test;
+namespace FFXIVHelpers.Test;
 
 public class NUnitLogger : ILogger<FFXIVByteHandler>
 {

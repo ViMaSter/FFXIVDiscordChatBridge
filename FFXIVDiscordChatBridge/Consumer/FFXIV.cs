@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using FFXIVByteParser;
-using FFXIVByteParser.Models;
+using FFXIVHelpers;
+using FFXIVHelpers.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sharlayan;

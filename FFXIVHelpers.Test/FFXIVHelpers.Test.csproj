@@ -6,6 +6,8 @@
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
+
+        <RootNamespace>FFXIVHelpers.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FFXIVByteParser\FFXIVByteParser.csproj" />
+      <ProjectReference Include="..\FFXIVHelpers\FFXIVHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>
