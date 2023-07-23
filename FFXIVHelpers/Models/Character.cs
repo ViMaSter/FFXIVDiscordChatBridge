@@ -33,7 +33,7 @@ public class Character
 
     public override string ToString()
     {
-        throw new InvalidOperationException("Use .Format() instead");
+        return Format(CharacterNameDisplay.WITH_WORLD);
     }
 
     public string CharacterName { get; }
