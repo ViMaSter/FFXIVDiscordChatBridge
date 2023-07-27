@@ -27,8 +27,7 @@ public partial class FFXIV : IDisposable, IFFXIVConsumer
     private readonly IDiscordClientWrapper _discordClientWrapper;
     private FFXIVByteHandler? _handler;
     private readonly string _worldName;
-    public Character CurrentCharacter => _handler?.CurrentCharacter ?? throw new Exception("FFXIVByteHandler not yet initialized");
-    
+
     private delegate Task OnNewChatMessageDelegate(FromFFXIV message);
 
     private OnNewChatMessageDelegate OnNewChatMessage { get; }
@@ -49,14 +48,14 @@ public partial class FFXIV : IDisposable, IFFXIVConsumer
             switch (message)
             {
                 case FromMonitoredChannel:
-                    await discordProducer.Send($"<{_usernameMapping.GetMappingFromFFXIVUsername(message.Character)}> {convertedMessage}");
+                    await discordProducer.Send(message.Character,_usernameMapping.GetMappingFromFFXIVUsername(message.Character), convertedMessage);
                     break;
                 case FromTellMessage:
                     HandleAuthorizationMessage(message);
                     break;
             }
         };
-    }
+        }
 
     private string TranslateDiscordEmojis(string input)
     {

@@ -91,13 +91,13 @@ public class UsernameMapping
         return confirmedMappings?.CombinedName(_displayNameMappings);
     }
     
-    public string GetMappingFromFFXIVUsername(Character ffxivName)
+    public string? GetMappingFromFFXIVUsername(Character ffxivName)
     {
         var confirmedMappings = Mappings.FirstOrDefault(mapping => 
             Equals(mapping.FFXIV.Name, ffxivName) && 
             mapping.FFXIV.ConfirmationState == ConfirmationState.Confirmed && 
             mapping.Discord.ConfirmationState == ConfirmationState.Confirmed);
-        return confirmedMappings?.CombinedName(_displayNameMappings) ?? ffxivName.Format(CharacterNameDisplay.WithoutWorld);
+        return confirmedMappings?.CombinedName(_displayNameMappings);
     }
 
     public void SetHostingCharacter(Character character)
