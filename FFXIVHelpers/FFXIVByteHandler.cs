@@ -121,58 +121,58 @@ public class FFXIVByteHandler
 
     private static class LocationReplacer
     {
-        private static readonly byte?[] ItemLinkStartPattern = { 0x02, 0x27, null, 0x04 };
-        private static readonly byte?[] ItemLinkEndPattern = { 0x01, 0x03 };
+        private static readonly byte?[] LocationLinkStartPattern = { 0x02, 0x27, null, 0x04 };
+        private static readonly byte?[] LocationLinkEndPattern = { 0x01, 0x03 };
 
-        private static readonly byte?[] ItemNameStartPattern = { 0x03, 0xEE, 0x82, 0xBB, 0x02, 0x49, 0x02, 0x01, 0x03, 0x02, 0x48, 0x02, 0x01, 0x03 };
-        private static readonly byte?[] ItemNameEndPattern = { 0x02, 0x27, 0x07 };
+        private static readonly byte?[] LocationNameStartPattern = { 0x03, 0xEE, 0x82, 0xBB, 0x02, 0x49, 0x02, 0x01, 0x03, 0x02, 0x48, 0x02, 0x01, 0x03 };
+        private static readonly byte?[] LocationNameEndPattern = { 0x02, 0x27, 0x07 };
 
-        private struct ItemReplacement
+        private struct LocationReplacement
         {
             public int StartIndex;
             public int EndIndex;
-            private string _itemName;
-            public string ItemName
+            private string _locationName;
+            public string LocationName
             {
                 get
                 {
-                    var locationName = _itemName[.._itemName.IndexOf('(')].Trim();
-                    var x = _itemName.Substring(_itemName.IndexOf('(') + 1, _itemName.IndexOf(',') - _itemName.IndexOf('(') - 1).Trim();
-                    var y = _itemName.Substring(_itemName.IndexOf(',') + 1, _itemName.IndexOf(')') - _itemName.IndexOf(',') - 1).Trim();
+                    var locationName = _locationName[.._locationName.IndexOf('(')].Trim();
+                    var x = _locationName.Substring(_locationName.IndexOf('(') + 1, _locationName.IndexOf(',') - _locationName.IndexOf('(') - 1).Trim();
+                    var y = _locationName.Substring(_locationName.IndexOf(',') + 1, _locationName.IndexOf(')') - _locationName.IndexOf(',') - 1).Trim();
                     
                     return $"**{locationName} @ {x}, {y}**";
                 }
-                init => _itemName = value;
+                init => _locationName = value;
             }
         }
 
-        private static List<ItemReplacement> GetReplacementsFromText(byte[] rawMessage)
+        private static List<LocationReplacement> GetReplacementsFromText(byte[] rawMessage)
         {
-            var result = new List<ItemReplacement>();
+            var result = new List<LocationReplacement>();
 
-            var replacements = rawMessage.Locate(ItemLinkStartPattern);
+            var replacements = rawMessage.Locate(LocationLinkStartPattern);
 
-            var itemLinkBufferStartPositions = replacements;
+            var locationLinkBufferStartPositions = replacements;
 
-            foreach (var itemLinkBufferStartPosition in itemLinkBufferStartPositions)
+            foreach (var locationLinkBufferStartPosition in locationLinkBufferStartPositions)
             {
-                var itemNameStartIndex = rawMessage.Skip(itemLinkBufferStartPosition).ToArray().Locate(ItemNameStartPattern).Last() + ItemNameStartPattern.Length;
-                var itemNameEndPosition = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).ToArray().Locate(ItemNameEndPattern).Last();
-                var itemName = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).Take(itemNameEndPosition).ToArray();
-                var itemLinkBufferEnd = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).ToArray().Locate(ItemLinkEndPattern).Last() + ItemLinkEndPattern.Length;
+                var locationNameStartIndex = rawMessage.Skip(locationLinkBufferStartPosition).ToArray().Locate(LocationNameStartPattern).Last() + LocationNameStartPattern.Length;
+                var locationNameEndPosition = rawMessage.Skip(locationLinkBufferStartPosition + locationNameStartIndex).ToArray().Locate(LocationNameEndPattern).Last();
+                var locationName = rawMessage.Skip(locationLinkBufferStartPosition + locationNameStartIndex).Take(locationNameEndPosition).ToArray();
+                var locationLinkBufferEnd = rawMessage.Skip(locationLinkBufferStartPosition + locationNameStartIndex).ToArray().Locate(LocationLinkEndPattern).Last() + LocationLinkEndPattern.Length;
 
-                result.Add(new ItemReplacement
+                result.Add(new LocationReplacement
                 {
-                    StartIndex = itemLinkBufferStartPosition,
-                    EndIndex = itemLinkBufferStartPosition + itemNameStartIndex + itemLinkBufferEnd,
-                    ItemName = Encoding.UTF8.GetString(itemName),
+                    StartIndex = locationLinkBufferStartPosition,
+                    EndIndex = locationLinkBufferStartPosition + locationNameStartIndex + locationLinkBufferEnd,
+                    LocationName = Encoding.UTF8.GetString(locationName),
                 });
             }
 
             return result;
         }
 
-        public static byte[] ReplaceItemReferences(byte[] rawMessage)
+        public static byte[] ReplaceLocationReferences(byte[] rawMessage)
         {
             var messageCopy = rawMessage.ToArray();
 
@@ -183,7 +183,7 @@ public class FFXIVByteHandler
             foreach (var replacement in replacements)
             {
                 var before = new ArraySegment<byte>(messageCopy, 0, replacement.StartIndex);
-                var mid = Encoding.UTF8.GetBytes(replacement.ItemName);
+                var mid = Encoding.UTF8.GetBytes(replacement.LocationName);
                 var after = new ArraySegment<byte>(messageCopy, replacement.EndIndex, messageCopy.Length - (replacement.EndIndex));
                 messageCopy = before.Concat(mid).Concat(after).ToArray();
             }
@@ -192,7 +192,7 @@ public class FFXIVByteHandler
         }
     }
 
-    public class PfLinkReplacer
+    private static class PartyFinderLinkReplacer
     {
         private static readonly byte?[] PfLinkStartPattern = { 0x02, 0x27, 0x08, 0x0A };
         private static readonly byte?[] PfLinkEndPattern = { 0x01, 0x03 };
@@ -200,7 +200,7 @@ public class FFXIVByteHandler
         private static readonly byte?[] PfNameStartPattern = { 0x48, 0x02, 0x01, 0x03 };
         private static readonly byte?[] PfNameEndPattern = { 0x20, 0x02, 0x12, 0x02, 0x59, 0x03, 0x02, 0x27, 0x07 };
 
-        public struct PfReplacement
+        public struct PartyFinderReplacement
         {
             public int StartIndex;
             public int EndIndex;
@@ -212,34 +212,34 @@ public class FFXIVByteHandler
             }
         }
 
-        private static List<PfReplacement> GetReplacementsFromText(byte[] rawMessage)
+        private static List<PartyFinderReplacement> GetReplacementsFromText(byte[] rawMessage)
         {
-            var result = new List<PfReplacement>();
+            var result = new List<PartyFinderReplacement>();
 
-            var itemLinkStartPositions = rawMessage.Locate(PfLinkStartPattern);
+            var partyFinderLinkStartPositions = rawMessage.Locate(PfLinkStartPattern);
 
-            foreach (var itemLinkStartPosition in itemLinkStartPositions)
+            foreach (var partyFinderLinkStartPosition in partyFinderLinkStartPositions)
             {
-                var itemNameEndPosition = rawMessage.Skip(itemLinkStartPosition).ToArray().Locate(PfNameEndPattern)[0];
+                var partyFinderNameEndPosition = rawMessage.Skip(partyFinderLinkStartPosition).ToArray().Locate(PfNameEndPattern)[0];
 
-                var itemLinkBuffer = rawMessage.Skip(itemLinkStartPosition).Take(itemNameEndPosition).ToArray();
-                var itemNameStartPosition = itemLinkBuffer.Locate(PfNameStartPattern).Last() + PfNameStartPattern.Length;
-                var itemName = itemLinkBuffer.Skip(itemNameStartPosition).Take(itemNameEndPosition).ToArray();
+                var partyFinderLinkBuffer = rawMessage.Skip(partyFinderLinkStartPosition).Take(partyFinderNameEndPosition).ToArray();
+                var partyFinderNameStartPosition = partyFinderLinkBuffer.Locate(PfNameStartPattern).Last() + PfNameStartPattern.Length;
+                var partyFinderName = partyFinderLinkBuffer.Skip(partyFinderNameStartPosition).Take(partyFinderNameEndPosition).ToArray();
 
-                var fullStop = rawMessage.Skip(itemLinkStartPosition + itemNameStartPosition).ToArray().Locate(PfLinkEndPattern)[0];
+                var fullStop = rawMessage.Skip(partyFinderLinkStartPosition + partyFinderNameStartPosition).ToArray().Locate(PfLinkEndPattern)[0];
 
-                result.Add(new PfReplacement
+                result.Add(new PartyFinderReplacement
                 {
-                    StartIndex = itemLinkStartPosition,
-                    EndIndex = itemLinkStartPosition + itemNameStartPosition + fullStop + PfLinkEndPattern.Length,
-                    PfEntry = Encoding.UTF8.GetString(itemName),
+                    StartIndex = partyFinderLinkStartPosition,
+                    EndIndex = partyFinderLinkStartPosition + partyFinderNameStartPosition + fullStop + PfLinkEndPattern.Length,
+                    PfEntry = Encoding.UTF8.GetString(partyFinderName),
                 });
             }
 
             return result;
         }
 
-        public static byte[] ReplaceItemReferences(byte[] rawMessage)
+        public static byte[] ReplacePartyFinderReferences(byte[] rawMessage)
         {
             var messageCopy = rawMessage.ToArray();
 
@@ -281,8 +281,8 @@ public class FFXIVByteHandler
         _logger.LogTrace(BitConverter.ToString(chatLogItem.Bytes));
 
         var utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
-        utf8Message = LocationReplacer.ReplaceItemReferences(utf8Message);
-        utf8Message = PfLinkReplacer.ReplaceItemReferences(utf8Message);
+        utf8Message = LocationReplacer.ReplaceLocationReferences(utf8Message);
+        utf8Message = PartyFinderLinkReplacer.ReplacePartyFinderReferences(utf8Message);
 
         var split = Split(utf8Message, 0x1F);
 
