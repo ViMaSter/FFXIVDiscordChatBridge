@@ -1,3 +1,5 @@
+using FFXIVHelpers.Models;
+
 namespace FFXIVDiscordChatBridge.Producer;
 
 public interface IFFXIV
@@ -7,5 +9,5 @@ public interface IFFXIV
 
 public interface IDiscord
 {
-    Task Send(string message);
+    Task Send(Character sender, string discordMappedName, string message);
 }
