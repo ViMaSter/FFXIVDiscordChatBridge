@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.1.0"></a>
+## [2.1.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.1.0) (2023-7-30)
+
+### Features
+
+* Replace in-game <flag> location markers with readable output on Discord ([47ef716](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/47ef716928f1bf93ceeae3b2df38c435738fb486))
+
+### Other
+
+* Added helper console app to convert log-format binary into raw binary files ([73517ee](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/73517eee1d61b614cf10e3f1e5fda0e4dc7e0c6f))
+* Adds macOS attributes file ([b039f5f](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/b039f5f58f6f8bbce9bacf59c44031f7769e7583))
+* binary files for flag locations ([ad9ea33](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/ad9ea33740162cb87b6ccbe232af8ab8b017a372))
+* Replaced ambiguous `item` prefix inside PartyFinderLinkReplacer and LocationLinkReplacer with proper prefix ([0ac14e2](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/0ac14e278be90e29a839da44f1d7ff4ee8493fc2))
+* **BinaryFromLogGenerator:** Reduces complexity ([2319d50](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/2319d5054aa57389d3e170e604533467746670ed))
+* **location.binary:** Replaces empty file with proper data for test fixture ([0026440](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/00264407d7852a6f04571b7adf9abcd9a32cf009))
+
 <a name="2.0.0"></a>
 ## [2.0.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.0.0) (2023-7-30)
 
