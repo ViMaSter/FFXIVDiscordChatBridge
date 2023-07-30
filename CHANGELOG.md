@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.0"></a>
+## [2.0.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.0.0) (2023-7-30)
+
+### Features
+
+* Discord Producer represents in-game characters as different Discord users including avatars by using Discord Webhooks to send messages ([cd9c8b4](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/cd9c8b47b08c5fcafbd2abc74b4f3e3cc9e6c1d2))
+
+### Breaking Changes
+
+* Discord Producer represents in-game characters as different Discord users including avatars by using Discord Webhooks to send messages ([cd9c8b4](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/cd9c8b47b08c5fcafbd2abc74b4f3e3cc9e6c1d2))
+
+### Other
+
+* Adds screenshot ([185376f](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/185376f7d8934eefc11d7fb8bb164bc9fb8311ce))
+
 <a name="1.4.0"></a>
 ## [1.4.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v1.4.0) (2023-7-23)
 
