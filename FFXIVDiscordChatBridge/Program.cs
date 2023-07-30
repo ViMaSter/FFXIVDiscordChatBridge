@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Timeout;
 
 namespace FFXIVDiscordChatBridge
 {
@@ -42,6 +45,18 @@ namespace FFXIVDiscordChatBridge
             
             services.AddSingleton<Consumer.FFXIV>();
             services.AddSingleton<Consumer.Discord>();
+            
+            var retryPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .Or<TimeoutRejectedException>() // thrown by Polly's TimeoutPolicy if the inner execution times out
+                .RetryAsync(3);
+
+            var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(10);  
+
+            services
+                .AddHttpClient(Producer.Discord.XIVAPIClientString, client => client.BaseAddress = new Uri("https://xivapi.com"))
+                .AddPolicyHandler(retryPolicy)
+                .AddPolicyHandler(timeoutPolicy);
             
             var serviceProvider = services.BuildServiceProvider();
             

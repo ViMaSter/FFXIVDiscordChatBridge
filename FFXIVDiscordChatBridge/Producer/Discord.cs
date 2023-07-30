@@ -1,6 +1,9 @@
+using System.Net.Http.Json;
 using Discord;
 using Discord.WebSocket;
 using FFXIVDiscordChatBridge.Extensions;
+using FFXIVDiscordChatBridge.Producer.DiscordWebhookRequest;
+using FFXIVHelpers.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -70,19 +73,40 @@ public class DiscordClientWrapper : IDiscordClientWrapper
 
 public class Discord : IDiscord
 {
-    private readonly ILogger<Discord> _logger;
-    private readonly IMessageChannel _channel;
+    public const string XIVAPIClientString = "XIVAPI";
 
-    public Discord(ILogger<Discord> logger, IDiscordClientWrapper wrapper)
+    private readonly ILogger<Discord> _logger;
+    private readonly HttpClient _xivapiClient;
+    private readonly Dictionary<Character, string> _avatarCache = new();
+    private readonly string _discordWebhookURL;
+
+    public Discord(ILogger<Discord> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
-        _channel = wrapper.Channel!;
+        _xivapiClient = httpClientFactory.CreateClient(XIVAPIClientString);
+        _discordWebhookURL = configuration["discordWebhookURL"] ?? throw new InvalidOperationException();
     }
     
-    public async Task Send(string content)
+    public async Task Send(Character sender, string discordMappedName, string message)
     {
-        _logger.LogInformation("Sending message to Discord: {Content}", content);
-        await _channel.SendMessageAsync(content);
-        _logger.LogInformation("Send message to Discord: {Content}", content);
+        if (!_avatarCache.ContainsKey(sender))
+        {
+            var httpResponse = await _xivapiClient.GetAsync($"/character/search?name={sender.CharacterName}&server={sender.WorldName}");
+            var responseContent = await httpResponse.Content.ReadFromJsonAsync<XIVAPIResponse.RootObject>();
+            if (responseContent != null && responseContent.Results.Any())
+            {
+                _avatarCache.Add(sender, responseContent.Results[0].Avatar);
+            }
+        }
+        _logger.LogInformation("Sending message to Discord: {Content}", message);
+        var displayName = sender.CharacterName;
+        if (!string.IsNullOrEmpty(discordMappedName))
+        {
+            displayName += "/" + sender.CharacterName;
+        }
+        
+        var webhookMessage = new RootObject(message, displayName, _avatarCache[sender]);
+        var responseMessage = await _xivapiClient.PostAsJsonAsync(_discordWebhookURL, webhookMessage);
+        _logger.LogInformation("Discord returned {StatusCode}: {Content}", responseMessage.StatusCode, await responseMessage.Content.ReadAsStringAsync());
     }
 }
