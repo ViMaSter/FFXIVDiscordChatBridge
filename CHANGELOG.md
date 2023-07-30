@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.1.1"></a>
+## [2.1.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.1.1) (2023-7-30)
+
+### Bug Fixes
+
+* Correctly maps FFXIV and Discord usernames inside Discord ([e9d2d3b](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/e9d2d3b9bd45b2236299da7e5e2a993ce7ffeb40))
+
 <a name="2.1.0"></a>
 ## [2.1.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.1.0) (2023-7-30)
 
