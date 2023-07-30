@@ -9,5 +9,5 @@ public interface IFFXIV
 
 public interface IDiscord
 {
-    Task Send(Character sender, string discordMappedName, string message);
+    Task Send(Character sender, string? discordMappedName, string message);
 }

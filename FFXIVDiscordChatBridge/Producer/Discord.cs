@@ -87,7 +87,7 @@ public class Discord : IDiscord
         _discordWebhookURL = configuration["discordWebhookURL"] ?? throw new InvalidOperationException();
     }
     
-    public async Task Send(Character sender, string discordMappedName, string message)
+    public async Task Send(Character sender, string? discordMappedName, string message)
     {
         if (!_avatarCache.ContainsKey(sender))
         {
@@ -102,7 +102,7 @@ public class Discord : IDiscord
         var displayName = sender.CharacterName;
         if (!string.IsNullOrEmpty(discordMappedName))
         {
-            displayName += "/" + sender.CharacterName;
+            displayName = discordMappedName;
         }
         
         var webhookMessage = new RootObject(message, displayName, _avatarCache[sender]);

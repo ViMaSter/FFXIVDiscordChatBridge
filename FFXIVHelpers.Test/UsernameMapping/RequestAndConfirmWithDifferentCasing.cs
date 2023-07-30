@@ -23,7 +23,7 @@ public class RequestAndConfirmWithDifferentCasing
             {
                 Assert.That(mapping.ReceiveFromFFXIV(_requestingCharacter, DISCORD_REQUESTING_USERNAME), Is.False);
                 Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.Null);
-                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo(_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)));
+                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.Null);
             });
         }
 
@@ -50,7 +50,7 @@ public class RequestAndConfirmWithDifferentCasing
             {
                 Assert.That(string.IsNullOrEmpty(message), Is.False);
                 Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.Null);
-                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo(_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)));
+                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.Null);
             });
         }
 
