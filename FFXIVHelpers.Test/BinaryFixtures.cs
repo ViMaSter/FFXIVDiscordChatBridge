@@ -70,10 +70,13 @@ public class ChatLogParserTest
     public void IgnoreMessagesFromCharacterThatActsAsBot(string fileName, byte[] actualInput, string expectedData)
     {
         var ffxivByteHandler = new FFXIVByteHandler(new NUnitLogger(), CHANNEL_CODE, "Sereth Milbana", "Cerberus");
-        Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem(){Bytes = actualInput, Line = "Sereth Milbana: " + System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE}, out var result), Is.False);
-        Assert.That(result, Is.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(ffxivByteHandler.TryFFXIVToDiscordFriendly(new ChatLogItem() { Bytes = actualInput, Line = "Sereth Milbana: " + System.Text.Encoding.UTF8.GetString(actualInput), Code = CHANNEL_CODE }, out var result), Is.False);
+            Assert.That(result, Is.Null);
+        });
     }
-    
+
     /// <summary>
     /// The character used as bot is ignored, unless "FORCEEXEC" is part of the message
     /// </summary>

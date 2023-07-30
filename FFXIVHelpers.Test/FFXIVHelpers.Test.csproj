@@ -23,6 +23,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location2.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location3.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location2.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location2.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location3.result" />
       <EmbeddedResource Include="EmptyChats\crossworld.binary">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
@@ -145,6 +151,18 @@
       <EmbeddedResource Include="ChatsFromOwnCharacter\item.binary">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
+      <None Remove="ChatsFromOtherCharacters\location.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location2.binary" />
+      <None Remove="ChatsFromOwnCharacter\location.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location.binary" />
+      <None Remove="ChatsFromOtherCharacters\location.result" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location.result" />
+      <None Remove="ChatsFromOwnCharacter\location.result" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location.result" />
+      <None Remove="ChatsFromOtherCharacters\location3.binary" />
+      <EmbeddedResource Include="ChatsFromOtherCharacters\location3.binary" />
+      <None Remove="ChatsFromOwnCharacter\location3.binary" />
+      <EmbeddedResource Include="ChatsFromOwnCharacter\location3.binary" />
     </ItemGroup>
 
 </Project>

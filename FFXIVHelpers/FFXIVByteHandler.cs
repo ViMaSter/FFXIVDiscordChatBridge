@@ -119,6 +119,79 @@ public class FFXIVByteHandler
         }
     }
 
+    private static class LocationReplacer
+    {
+        private static readonly byte?[] ItemLinkStartPattern = { 0x02, 0x27, null, 0x04 };
+        private static readonly byte?[] ItemLinkEndPattern = { 0x01, 0x03 };
+
+        private static readonly byte?[] ItemNameStartPattern = { 0x03, 0xEE, 0x82, 0xBB, 0x02, 0x49, 0x02, 0x01, 0x03, 0x02, 0x48, 0x02, 0x01, 0x03 };
+        private static readonly byte?[] ItemNameEndPattern = { 0x02, 0x27, 0x07 };
+
+        private struct ItemReplacement
+        {
+            public int StartIndex;
+            public int EndIndex;
+            private string _itemName;
+            public string ItemName
+            {
+                get
+                {
+                    var locationName = _itemName[.._itemName.IndexOf('(')].Trim();
+                    var x = _itemName.Substring(_itemName.IndexOf('(') + 1, _itemName.IndexOf(',') - _itemName.IndexOf('(') - 1).Trim();
+                    var y = _itemName.Substring(_itemName.IndexOf(',') + 1, _itemName.IndexOf(')') - _itemName.IndexOf(',') - 1).Trim();
+                    
+                    return $"**{locationName} @ {x}, {y}**";
+                }
+                init => _itemName = value;
+            }
+        }
+
+        private static List<ItemReplacement> GetReplacementsFromText(byte[] rawMessage)
+        {
+            var result = new List<ItemReplacement>();
+
+            var replacements = rawMessage.Locate(ItemLinkStartPattern);
+
+            var itemLinkBufferStartPositions = replacements;
+
+            foreach (var itemLinkBufferStartPosition in itemLinkBufferStartPositions)
+            {
+                var itemNameStartIndex = rawMessage.Skip(itemLinkBufferStartPosition).ToArray().Locate(ItemNameStartPattern).Last() + ItemNameStartPattern.Length;
+                var itemNameEndPosition = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).ToArray().Locate(ItemNameEndPattern).Last();
+                var itemName = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).Take(itemNameEndPosition).ToArray();
+                var itemLinkBufferEnd = rawMessage.Skip(itemLinkBufferStartPosition + itemNameStartIndex).ToArray().Locate(ItemLinkEndPattern).Last() + ItemLinkEndPattern.Length;
+
+                result.Add(new ItemReplacement
+                {
+                    StartIndex = itemLinkBufferStartPosition,
+                    EndIndex = itemLinkBufferStartPosition + itemNameStartIndex + itemLinkBufferEnd,
+                    ItemName = Encoding.UTF8.GetString(itemName),
+                });
+            }
+
+            return result;
+        }
+
+        public static byte[] ReplaceItemReferences(byte[] rawMessage)
+        {
+            var messageCopy = rawMessage.ToArray();
+
+            var replacements = GetReplacementsFromText(messageCopy);
+
+            // apply the replacements in reverse to not change positional indices
+            replacements.Reverse();
+            foreach (var replacement in replacements)
+            {
+                var before = new ArraySegment<byte>(messageCopy, 0, replacement.StartIndex);
+                var mid = Encoding.UTF8.GetBytes(replacement.ItemName);
+                var after = new ArraySegment<byte>(messageCopy, replacement.EndIndex, messageCopy.Length - (replacement.EndIndex));
+                messageCopy = before.Concat(mid).Concat(after).ToArray();
+            }
+
+            return messageCopy;
+        }
+    }
+
     public class PfLinkReplacer
     {
         private static readonly byte?[] PfLinkStartPattern = { 0x02, 0x27, 0x08, 0x0A };
@@ -208,6 +281,7 @@ public class FFXIVByteHandler
         _logger.LogTrace(BitConverter.ToString(chatLogItem.Bytes));
 
         var utf8Message = ItemLinkReplacer.ReplaceItemReferences(chatLogItem.Bytes);
+        utf8Message = LocationReplacer.ReplaceItemReferences(utf8Message);
         utf8Message = PfLinkReplacer.ReplaceItemReferences(utf8Message);
 
         var split = Split(utf8Message, 0x1F);
