@@ -27,9 +27,17 @@ public class Discord : IDiscordConsumer
         _discordEmojiConverter = discordEmojiConverter;
     }
 
+    private enum EventType
+    {
+        MessageSent,
+        MessageEdited
+    }
+
     public Task Start()
     {
-        _discordWrapper.Client.MessageReceived += ClientOnMessageReceived;
+        _discordWrapper.Client.MessageReceived += (message) => ClientOnMessageReceived(message, EventType.MessageSent);
+        _discordWrapper.Client.MessageUpdated += (_, socketMessage, _) => ClientOnMessageReceived(socketMessage, EventType.MessageEdited);
+        
         if (_discordWrapper.Client.ConnectionState != ConnectionState.Connected)
         {
             _discordWrapper.Client.Ready += SetupDisplayNameLoop;
@@ -57,7 +65,7 @@ public class Discord : IDiscordConsumer
         return Task.CompletedTask;
     }
 
-    private Task ClientOnMessageReceived(SocketMessage socketMessage)
+    private Task ClientOnMessageReceived(SocketMessage socketMessage, EventType eventType)
     {
         if (socketMessage is not SocketUserMessage socketUserMessage)
         {
@@ -68,7 +76,7 @@ public class Discord : IDiscordConsumer
         return socketMessage.Channel switch
         {
             SocketDMChannel => HandleUsernameMapping(socketUserMessage),
-            SocketTextChannel => HandleFFXIVMessage(socketUserMessage),
+            SocketTextChannel => HandleFFXIVMessage(socketUserMessage, eventType),
             _ => Task.CompletedTask
         };
     }
@@ -94,7 +102,7 @@ public class Discord : IDiscordConsumer
         return Task.CompletedTask;
     }
 
-    private Task HandleFFXIVMessage(SocketUserMessage socketMessage)
+    private Task HandleFFXIVMessage(SocketUserMessage socketMessage, EventType eventType)
     {
         if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
         {
@@ -157,7 +165,7 @@ public class Discord : IDiscordConsumer
 
         var userDisplayName = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
 
-        _logger.LogInformation("Received message from Discord: {FullMessage}", fullMessage);
+        _logger.LogInformation("Received message from Discord ({EventType}): {FullMessage}", fullMessage, eventType);
         foreach (var line in fullMessage.Split(Environment.NewLine))
         {
             if (string.IsNullOrEmpty(line.Trim()))
@@ -165,7 +173,9 @@ public class Discord : IDiscordConsumer
                 continue;
             }
             
-            var formattedMessage = $"[{userDisplayName}]: {line}";
+            var optionalEditSuffix = eventType == EventType.MessageEdited ? " (edit)" : "";
+            
+            var formattedMessage = $"[{userDisplayName}{optionalEditSuffix}]: {line}";
 
             _ffxivProducer.Send(formattedMessage).Wait();
         }
