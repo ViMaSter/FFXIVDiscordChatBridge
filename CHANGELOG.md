@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.2.0"></a>
+## [2.2.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.2.0) (2023-7-31)
+
+### Features
+
+* Discord Consumer handles edited messages by `Send()`ing entire message with `(edit)` prefix ([62b79bc](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/62b79bc6c03643a41db60a38e3324abf5de4aea6))
+
 <a name="2.1.1"></a>
 ## [2.1.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.1.1) (2023-7-30)
 
