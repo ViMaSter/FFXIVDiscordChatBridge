@@ -43,7 +43,7 @@ namespace FFXIVDiscordChatBridge
             services.AddSingleton<DiscordEmojiConverter>();
             services.AddSingleton<IPersistence, FilePersistence>();
             
-            services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
+            services.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>();
             
             services.AddSingleton<Producer.IFFXIV, Producer.FFXIV>();
             services.AddSingleton<Producer.IDiscord, Producer.Discord>();
