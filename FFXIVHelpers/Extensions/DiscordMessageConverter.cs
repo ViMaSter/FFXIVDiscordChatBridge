@@ -75,46 +75,72 @@ public class DiscordMessageConverter
         {
             throw new InvalidOperationException("Message received from non-guild user");
         }
-        
-        var textContent = socketMessage.Content;
 
-        foreach (var socketMessageTag in socketMessage.Tags)
+        var textContent = socketMessage.Content;
+        var trackedTags = socketMessage.Tags.Select(AddTrackableIndex).ToList();
+
+        for (var index = 0; index < trackedTags.Count; index++)
         {
-            switch (socketMessageTag.Type)
+            var socketMessageTag = trackedTags[index];
+            switch (socketMessageTag.Tag.Type)
             {
                 case TagType.Emoji:
-                    if (socketMessageTag.Value is not Emote e)
+                {
+                    if (socketMessageTag.Tag.Value is not Emote e)
                     {
                         continue;
                     }
 
-                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $":{e.Name}:");
+                    var replacement = $":{e.Name}:";
+                    var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
+
+                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
+                    Helper.UpdateIndices(ref trackedTags, socketMessageTag.Index, replacementLengthDifference);
                     break;
+                }
                 case TagType.UserMention:
-                    if (socketMessageTag.Value is not IGuildUser u)
+                {
+                    if (socketMessageTag.Tag.Value is not IGuildUser u)
                     {
                         continue;
                     }
 
-                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"@{u.Nickname}");
+                    var replacement = $"@{u.Nickname}";
+                    var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
+
+                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
+                    Helper.UpdateIndices(ref trackedTags, socketMessageTag.Index, replacementLengthDifference);
                     break;
+                }
 
                 case TagType.ChannelMention:
-                    if (socketMessageTag.Value is not IGuildChannel c)
+                {
+                    if (socketMessageTag.Tag.Value is not IGuildChannel c)
                     {
                         continue;
                     }
 
-                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"#{c.Name}");
+                    var replacement = $"#{c.Name}";
+                    var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
+
+                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
+                    Helper.UpdateIndices(ref trackedTags, socketMessageTag.Index, replacementLengthDifference);
                     break;
+                }
                 case TagType.RoleMention:
-                    if (socketMessageTag.Value is not IRole r)
+                {
+                    if (socketMessageTag.Tag.Value is not IRole r)
                     {
                         continue;
                     }
 
-                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"@{r.Name}");
+                    var replacement = $"@{r.Name}";
+                    var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
+
+                    textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
+                    Helper.UpdateIndices(ref trackedTags, socketMessageTag.Index, replacementLengthDifference);
                     break;
+                }
                 case TagType.EveryoneMention:
                     break;
 
@@ -125,18 +151,17 @@ public class DiscordMessageConverter
             }
         }
 
-        textContent = textContent.ReplaceLineEndings();
         textContent = _discordEmojiConverter.ReplaceEmoji(textContent);
 
         var fromUser = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
 
         _logger.LogInformation("Received message from Discord ({EventType}): {FullMessage}", textContent, eventType);
 
-        textContent = ApplyAuthorWrapper(textContent, fromUser, eventType).Trim();
+        textContent = ApplyAuthorWrapper(textContent.ReplaceLineEndings(), fromUser, eventType).Trim();
         
         textContent = socketMessage.Attachments.Aggregate(textContent, (current, attachment) => current + $"{Environment.NewLine}{fromUser} sent an attachment: '{attachment.Filename}'");
         textContent = socketMessage.Stickers.Aggregate(textContent, (current, socketMessageSticker) => current + $"{Environment.NewLine}{fromUser} sent a '{socketMessageSticker.Name}' sticker: https://media.discordapp.net/stickers/{socketMessageSticker.Id}.webp");
-
+        
         // override message format if this is a reply
         var isReply = socketMessage.Reference != null;
         if (!isReply)
@@ -147,6 +172,15 @@ public class DiscordMessageConverter
         ApplyReplyWrapper(socketMessage, ref textContent, fromUser, eventType);
 
         return textContent.Trim();
+    }
+
+    private static TrackableIndexTag AddTrackableIndex(ITag arg)
+    {
+        return new TrackableIndexTag()
+        {
+            Index = arg.Index,
+            Tag = arg
+        };
     }
 
     private string ApplyAuthorWrapper(string textContent, string fromUser, EventType eventType)
@@ -185,5 +219,32 @@ public class DiscordMessageConverter
 
         input = string.Format(NextFormat, fromUser, toUserDisplayName, input);
         _logger.LogInformation("Updating message format to handle response from {NewAuthor} to {OriginalAuthor}", fromUser, toUserDisplayName);
+    }
+}
+
+public class TrackableIndexTag
+{
+    public int Index;
+    public ITag Tag;
+
+    public void SetIndex(int index)
+    {
+        Index = index;
+    }
+}
+
+public static class Helper
+{
+    public static void UpdateIndices(ref List<TrackableIndexTag> trackedTags, int index, int difference)
+    {
+        foreach (var trackedTag in trackedTags)
+        {
+            if (trackedTag.Index < index)
+            {
+                continue;
+            }
+            trackedTag.SetIndex(trackedTag.Index + difference);
+            
+        }
     }
 }

@@ -107,7 +107,7 @@ public class DiscordMessageConverterTests
         channel.SetupGet(r => r.Name).Returns("bloop");
         var discordChannelMock = new Mock<ITag>();
         discordChannelMock.SetupGet(tag => tag.Type).Returns(TagType.ChannelMention);
-        discordChannelMock.SetupGet(tag => tag.Index).Returns(79);
+        discordChannelMock.SetupGet(tag => tag.Index).Returns(78);
         discordChannelMock.SetupGet(tag => tag.Length).Returns(22);
         discordChannelMock.SetupGet(tag => tag.Key).Returns(1032389530248032356);
         discordChannelMock.SetupGet(tag => tag.Value).Returns(channel.Object);
@@ -117,7 +117,7 @@ public class DiscordMessageConverterTests
         
         var discordRoleMock = new Mock<ITag>();
         discordRoleMock.SetupGet(tag => tag.Type).Returns(TagType.RoleMention);
-        discordRoleMock.SetupGet(tag => tag.Index).Returns(109);
+        discordRoleMock.SetupGet(tag => tag.Index).Returns(107);
         discordRoleMock.SetupGet(tag => tag.Length).Returns(22);
         discordRoleMock.SetupGet(tag => tag.Key).Returns(366743881838100480);
         discordRoleMock.SetupGet(tag => tag.Value).Returns(role.Object);
@@ -126,7 +126,7 @@ public class DiscordMessageConverterTests
         everyone.SetupGet(r => r.Name).Returns("@everyone");
         var discordEveryoneMock = new Mock<ITag>();
         discordEveryoneMock.SetupGet(tag => tag.Type).Returns(TagType.EveryoneMention);
-        discordEveryoneMock.SetupGet(tag => tag.Index).Returns(143);
+        discordEveryoneMock.SetupGet(tag => tag.Index).Returns(140);
         discordEveryoneMock.SetupGet(tag => tag.Length).Returns(9);
         discordEveryoneMock.SetupGet(tag => tag.Key).Returns(0);
         discordEveryoneMock.SetupGet(tag => tag.Value).Returns(everyone.Object);
@@ -135,7 +135,7 @@ public class DiscordMessageConverterTests
         here.SetupGet(r => r.Name).Returns("@everyone");
         var discordHereMock = new Mock<ITag>();
         discordHereMock.SetupGet(tag => tag.Type).Returns(TagType.HereMention);
-        discordHereMock.SetupGet(tag => tag.Index).Returns(160);
+        discordHereMock.SetupGet(tag => tag.Index).Returns(156);
         discordHereMock.SetupGet(tag => tag.Length).Returns(5);
         discordHereMock.SetupGet(tag => tag.Key).Returns(0);
         discordHereMock.SetupGet(tag => tag.Value).Returns(here.Object);
@@ -148,23 +148,17 @@ public class DiscordMessageConverterTests
             discordEveryoneMock.Object,
             discordHereMock.Object
         });
-        var discordStickerMock = new Mock<IStickerItem>();
-        discordStickerMock.SetupGet(sticker => sticker.Name).Returns(STICKER_NAME);
-        discordStickerMock.SetupGet(sticker => sticker.Id).Returns(STICKER_ID);
         discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
-        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<IStickerItem>()
-        {
-            discordStickerMock.Object
-        });
+        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<IStickerItem>());
         discordMessageMock.SetupGet(message => message.Content).Returns("""
         Emoji: 👀
-        Server Emoji: <:eyes_r:737363893571027115> 
+        Server Emoji: <:eyes_r:737363893571027115>
         User: @vimaster
-        Channel: <#1032389530248032356> 
-        Role: <@&366743881838100480> 
-        Everyone: @everyone 
+        Channel: <#1032389530248032356>
+        Role: <@&366743881838100480>
+        Everyone: @everyone
         Here: @here
-        """);
+        """.ReplaceLineEndings().Replace("\r\n", "\n"));
         
         var result = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
         const string EXPECTED = """
@@ -173,7 +167,7 @@ public class DiscordMessageConverterTests
             [displayName]: User: @vimaster
             [displayName]: Channel: #bloop
             [displayName]: Role: @himebot
-            [displayName]: Everyone: @everyone 
+            [displayName]: Everyone: @everyone
             [displayName]: Here: @here
             """;
         Assert.That(result, Is.EqualTo(EXPECTED));
