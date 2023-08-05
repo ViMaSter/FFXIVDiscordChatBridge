@@ -14,33 +14,42 @@ public class DiscordMessageConverter
     
     private const string FFXIVArrow = ""; // this will render as '6' or '?' outside of FFXIV
 
-    private static readonly string[] Formats = {
-        "[{0}] in response to [{1}]:" + Environment.NewLine +
-        FFXIVArrow+" {2}",
-        
-        "[{0}] @ [{1}]:" + Environment.NewLine +
-        FFXIVArrow+" {2}",
-        
-        "[{0}] replying to [{1}]:" + Environment.NewLine +
-        FFXIVArrow+" {2}",
-        
-        "[{0}] responding to [{1}]:" + Environment.NewLine +
-        FFXIVArrow+" {2}",
-        
-        "[{0}] in response to [{1}]:" + Environment.NewLine +
-        "> {2}",
-        
-        "[{0}] @ [{1}]:" + Environment.NewLine +
-        "> {2}",
-        
-        "[{0}] replying to [{1}]:" + Environment.NewLine +
-        "> {2}",
-        
-        "[{0}] responding to [{1}]:" + Environment.NewLine +
-        "> {2}",
+    private static readonly (string prefix, string indent)[] Formats = {
+        new(
+            "[{0}] in response to [{1}]:",
+            FFXIVArrow + " {0}"
+        ),
+        new(
+            "[{0}] @ [{1}]:",
+            FFXIVArrow + " {0}"
+        ),
+        new(
+            "[{0}] replying to [{1}]:",
+            FFXIVArrow + " {0}"
+        ),
+        new(
+            "[{0}] responding to [{1}]:",
+            FFXIVArrow + " {0}"
+        ),
+        new(
+            "[{0}] in response to [{1}]:",
+            "> {0}"
+        ),
+        new(
+            "[{0}] @ [{1}]:",
+            "> {0}"
+        ),
+        new(
+            "[{0}] replying to [{1}]:",
+            "> {0}"
+        ),
+        new(
+            "[{0}] responding to [{1}]:",
+            "> {0}"
+        )
     };
     private static int _lastUsedFormat;
-    private static string NextFormat
+    private static (string prefix, string indent) NextFormat
     {
         get
         {
@@ -198,7 +207,12 @@ public class DiscordMessageConverter
             _ => input
         };
 
-        input = string.Format(NextFormat, fromUser, toUserDisplayName, input);
+        var (prefix, indent) = NextFormat;
+        var inputLines = input.Split(Environment.NewLine);
+        var prefixedContent = string.Format(prefix, fromUser, toUserDisplayName);
+        var indentedContent = inputLines.Select(line => string.Format(indent, line));
+        input = string.Join(Environment.NewLine, indentedContent.Prepend(prefixedContent));
+        
         _logger.LogInformation("Updating message format to handle response from {NewAuthor} to {OriginalAuthor}", fromUser, toUserDisplayName);
     }
 }

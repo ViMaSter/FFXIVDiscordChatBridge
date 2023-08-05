@@ -13,6 +13,7 @@ public class DiscordMessageConverterTests
 {
     private DiscordMessageConverter _discordMessageConverter = null!;
     private const string UserDisplayName = "displayName";
+    private const string ReplyUserDisplayName = "ReplyUser";
     private const string MessageContent = "message content";
     private const string AttachmentFilename = "originalFilename.extension";
     private const string StickerName = nameof(StickerName);
@@ -36,7 +37,7 @@ public class DiscordMessageConverterTests
     {
         var discordMessageReferenceMock = new Mock<IUserMessage>();
         var replyAuthor = new Mock<IGuildUser>();
-        replyAuthor.SetupGet(user => user.DisplayName).Returns("ReplyUser");
+        replyAuthor.SetupGet(user => user.DisplayName).Returns(ReplyUserDisplayName);
         discordMessageReferenceMock.SetupGet(messageReference => messageReference.Author).Returns(replyAuthor.Object);
         var messageReference = new MessageReference(123456789, 987654321, 123456789);
         responseMessage.SetupGet(message => message.Reference).Returns(messageReference);
@@ -133,8 +134,26 @@ public class DiscordMessageConverterTests
             ApplyReplyChanges(ref discordMessageMock);
         }
         
+        
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.That(actual, Is.EqualTo($"[{UserDisplayName}]: {MessageContent}{Environment.NewLine}{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp"));
+        var expected = $"[{UserDisplayName}]: {MessageContent}{Environment.NewLine}{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp";
+        if (withReply)
+        {
+            var actualLines = actual.Split(Environment.NewLine);
+            var expectedLines = expected.Split(Environment.NewLine);
+            Assert.That(actualLines[0], Contains.Substring(UserDisplayName));
+            Assert.That(actualLines[0], Contains.Substring(ReplyUserDisplayName));
+            for (var index = 0; index < expectedLines.Length; index++)
+            {
+                var expectedLine = expectedLines[index];
+                var actualLine = string.Concat(actualLines[index+1].Skip(2));
+                Assert.That(actualLine, Is.EqualTo(expectedLine));
+            }
+        }
+        else
+        {
+            Assert.That(actual, Is.EqualTo(expected));
+        }
     }
     
     [TestCase(true)]
