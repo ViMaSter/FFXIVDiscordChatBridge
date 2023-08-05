@@ -1,6 +1,4 @@
 ﻿using Discord;
-using Discord.Rest;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 
 namespace FFXIVHelpers.Extensions;

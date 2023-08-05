@@ -5,7 +5,6 @@ using FFXIVHelpers.Models;
 using FFXIVHelpers.Test.UsernameMapping.Stubs;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using NUnit.Framework.Constraints;
 
 namespace FFXIVHelpers.Test.Extensions;
 
