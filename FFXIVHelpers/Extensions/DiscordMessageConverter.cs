@@ -91,7 +91,7 @@ public class DiscordMessageConverter
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $":{e.Name}:");
                     break;
                 case TagType.UserMention:
-                    if (socketMessageTag.Value is not SocketGuildUser u)
+                    if (socketMessageTag.Value is not IGuildUser u)
                     {
                         continue;
                     }
@@ -100,7 +100,7 @@ public class DiscordMessageConverter
                     break;
 
                 case TagType.ChannelMention:
-                    if (socketMessageTag.Value is not SocketGuildChannel c)
+                    if (socketMessageTag.Value is not IGuildChannel c)
                     {
                         continue;
                     }
@@ -108,7 +108,7 @@ public class DiscordMessageConverter
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"#{c.Name}");
                     break;
                 case TagType.RoleMention:
-                    if (socketMessageTag.Value is not SocketRole r)
+                    if (socketMessageTag.Value is not IRole r)
                     {
                         continue;
                     }
@@ -126,11 +126,32 @@ public class DiscordMessageConverter
         }
 
         textContent = textContent.ReplaceLineEndings();
-        textContent = _discordEmojiConverter.ReplaceEmoji(textContent).Trim();
+        textContent = _discordEmojiConverter.ReplaceEmoji(textContent);
 
         var fromUser = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
 
         _logger.LogInformation("Received message from Discord ({EventType}): {FullMessage}", textContent, eventType);
+
+        textContent = ApplyAuthorWrapper(textContent, fromUser, eventType).Trim();
+        
+        textContent = socketMessage.Attachments.Aggregate(textContent, (current, attachment) => current + $"{Environment.NewLine}{fromUser} sent an attachment: '{attachment.Filename}'");
+        textContent = socketMessage.Stickers.Aggregate(textContent, (current, socketMessageSticker) => current + $"{Environment.NewLine}{fromUser} sent a '{socketMessageSticker.Name}' sticker: https://media.discordapp.net/stickers/{socketMessageSticker.Id}.webp");
+
+        // override message format if this is a reply
+        var isReply = socketMessage.Reference != null;
+        if (!isReply)
+        {
+            return textContent;
+        }
+
+        ApplyReplyWrapper(socketMessage, ref textContent, fromUser, eventType);
+
+        return textContent.Trim();
+    }
+
+    private string ApplyAuthorWrapper(string textContent, string fromUser, EventType eventType)
+    {
+        var fullOutput = "";
         foreach (var line in textContent.Split(Environment.NewLine))
         {
             if (string.IsNullOrEmpty(line.Trim()))
@@ -140,25 +161,13 @@ public class DiscordMessageConverter
 
             var optionalEditSuffix = eventType == EventType.MessageEdited ? " (edit)" : "";
 
-            textContent = $"[{fromUser}{optionalEditSuffix}]: {textContent}" + Environment.NewLine;
+            fullOutput += $"[{fromUser}{optionalEditSuffix}]: {line}" + Environment.NewLine;
         }
 
-        textContent = socketMessage.Attachments.Aggregate(textContent, (current, attachment) => current + $"{fromUser} sent an attachment: '{attachment.Filename}'");
-        textContent = socketMessage.Stickers.Aggregate(textContent, (current, socketMessageSticker) => current + $"{fromUser} sent a '{socketMessageSticker.Name}' sticker: https://media.discordapp.net/stickers/{socketMessageSticker.Id}.webp");
-
-        // override message format if this is a reply
-        var isReply = socketMessage.Reference != null;
-        if (!isReply)
-        {
-            return textContent.Trim();
-        }
-
-        ApplyReplyWrapper(socketMessage, ref textContent, fromUser);
-
-        return textContent.Trim();
+        return fullOutput;
     }
 
-    private void ApplyReplyWrapper(IMessage socketUserMessage, ref string input, string? fromUser)
+    private void ApplyReplyWrapper(IMessage socketUserMessage, ref string input, string? fromUser, EventType eventType)
     {
         var originalMessage = _discordWrapper.Channel!.GetMessageAsync(socketUserMessage.Reference.MessageId.Value).Result;
         if (originalMessage is not RestUserMessage originalUserMessage)

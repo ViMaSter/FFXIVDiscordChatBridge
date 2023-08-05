@@ -1,5 +1,6 @@
 using FFXIVDiscordChatBridge.Extensions;
 using FFXIVHelpers;
+using FFXIVHelpers.Extensions;
 using FFXIVHelpers.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,8 @@ namespace FFXIVDiscordChatBridge
             });
 
             services.AddSingleton<DiscordEmojiConverter>();
+            services.AddSingleton<DiscordMessageConverter>();
+            
             services.AddSingleton<IPersistence, FilePersistence>();
             
             services.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>();
