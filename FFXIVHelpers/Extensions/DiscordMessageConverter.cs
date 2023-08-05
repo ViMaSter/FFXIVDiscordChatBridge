@@ -147,13 +147,16 @@ public class DiscordMessageConverter
 
         _logger.LogInformation("Received message from Discord ({EventType}): {FullMessage}", textContent, eventType);
 
-        textContent = ApplyAuthorWrapper(textContent.ReplaceLineEndings(), fromUser, eventType).Trim();
+        var isReply = socketMessage.Reference != null;
+        if (!isReply)
+        {
+            textContent = ApplyAuthorWrapper(textContent.ReplaceLineEndings(), fromUser, eventType).Trim();
+        }
         
         textContent = socketMessage.Attachments.Aggregate(textContent, (current, attachment) => current + $"{Environment.NewLine}{fromUser} sent an attachment: '{attachment.Filename}'");
         textContent = socketMessage.Stickers.Aggregate(textContent, (current, socketMessageSticker) => current + $"{Environment.NewLine}{fromUser} sent a '{socketMessageSticker.Name}' sticker: https://media.discordapp.net/stickers/{socketMessageSticker.Id}.webp");
         
         // override message format if this is a reply
-        var isReply = socketMessage.Reference != null;
         if (!isReply)
         {
             return textContent;
@@ -208,7 +211,7 @@ public class DiscordMessageConverter
         };
 
         var (prefix, indent) = NextFormat;
-        var inputLines = input.Split(Environment.NewLine);
+        var inputLines = input.Trim().Split(Environment.NewLine);
         var prefixedContent = string.Format(prefix, fromUser, toUserDisplayName);
         var indentedContent = inputLines.Select(line => string.Format(indent, line));
         input = string.Join(Environment.NewLine, indentedContent.Prepend(prefixedContent));

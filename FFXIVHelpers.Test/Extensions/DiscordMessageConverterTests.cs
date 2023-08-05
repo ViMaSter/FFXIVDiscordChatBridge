@@ -5,12 +5,50 @@ using FFXIVHelpers.Models;
 using FFXIVHelpers.Test.UsernameMapping.Stubs;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using NUnit.Framework.Constraints;
 
 namespace FFXIVHelpers.Test.Extensions;
 
 [Parallelizable(ParallelScope.All)]
 public class DiscordMessageConverterTests
 {
+    private static class ReplyAssert
+    {
+        public static void That(string actual, string expectedWrittenContent, string expectedGeneratedContent, bool withReply)
+        {
+            Console.WriteLine("----------");
+            Console.WriteLine(nameof(actual)+":");
+            Console.WriteLine(actual);
+            Console.WriteLine("-----");
+            Console.WriteLine(nameof(expectedWrittenContent)+":");
+            Console.WriteLine(expectedWrittenContent);
+            Console.WriteLine("-----");
+            Console.WriteLine(nameof(expectedGeneratedContent)+":");
+            Console.WriteLine(expectedGeneratedContent);
+            Console.WriteLine("----------");
+
+            
+            if (!withReply)
+            {
+                Assert.That(actual, Is.EqualTo($"{string.Join(Environment.NewLine, expectedWrittenContent.Split(Environment.NewLine).Select(line=>$"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim()));
+                return;
+            }
+            var content = $"{expectedWrittenContent}{Environment.NewLine}{expectedGeneratedContent}".Trim();
+            var actualLines = actual.Split(Environment.NewLine);
+            var expectedLines = $"{content}".Split(Environment.NewLine);
+            Assert.That(actualLines[0], Contains.Substring(UserDisplayName));
+            Assert.That(actualLines[0], Contains.Substring(ReplyUserDisplayName));
+            for (var index = 0; index < expectedLines.Length; index++)
+            {
+                var expectedLine = expectedLines[index];
+                var actualLine = string.Concat(actualLines[index+1].Skip(2));
+                Assert.That(actualLine, Is.EqualTo(expectedLine));
+                Assert.That(actualLine, Does.Not.StartWith("["+UserDisplayName));
+            }
+            
+        }
+    }
+    
     private DiscordMessageConverter _discordMessageConverter = null!;
     private const string UserDisplayName = "displayName";
     private const string ReplyUserDisplayName = "ReplyUser";
@@ -61,7 +99,8 @@ public class DiscordMessageConverterTests
         }
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.That(actual, Is.EqualTo($"[{UserDisplayName}]: {MessageContent}"));
+        const string expected = $"{MessageContent}";
+        ReplyAssert.That(actual, expected, "", withReply);
     }
     
     [TestCase(true)]
@@ -82,7 +121,8 @@ public class DiscordMessageConverterTests
         }
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.That(actual, Is.EqualTo($"[{UserDisplayName}]: {MessageContent}"));
+        const string expected = $"{MessageContent}";
+        ReplyAssert.That(actual, expected, "", withReply);
     }
     
     [TestCase(true)]
@@ -108,7 +148,7 @@ public class DiscordMessageConverterTests
         }
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.That(actual, Is.EqualTo($"[{UserDisplayName}]: {MessageContent}{Environment.NewLine}{UserDisplayName} sent an attachment: '{AttachmentFilename}'"));
+        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent an attachment: '{AttachmentFilename}'", withReply);
     }
     
     [TestCase(true)]
@@ -136,24 +176,7 @@ public class DiscordMessageConverterTests
         
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        var expected = $"[{UserDisplayName}]: {MessageContent}{Environment.NewLine}{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp";
-        if (withReply)
-        {
-            var actualLines = actual.Split(Environment.NewLine);
-            var expectedLines = expected.Split(Environment.NewLine);
-            Assert.That(actualLines[0], Contains.Substring(UserDisplayName));
-            Assert.That(actualLines[0], Contains.Substring(ReplyUserDisplayName));
-            for (var index = 0; index < expectedLines.Length; index++)
-            {
-                var expectedLine = expectedLines[index];
-                var actualLine = string.Concat(actualLines[index+1].Skip(2));
-                Assert.That(actualLine, Is.EqualTo(expectedLine));
-            }
-        }
-        else
-        {
-            Assert.That(actual, Is.EqualTo(expected));
-        }
+        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp", withReply);
     }
     
     [TestCase(true)]
@@ -246,15 +269,15 @@ public class DiscordMessageConverterTests
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
         const string expected = """
-            [displayName]: Emoji: :eyes:
-            [displayName]: Server Emoji: :eyes_r:
-            [displayName]: User: @Snasen
-            [displayName]: Channel: #bloop
-            [displayName]: Role: @himebot
-            [displayName]: Everyone: @everyone
-            [displayName]: Here: @here
+            Emoji: :eyes:
+            Server Emoji: :eyes_r:
+            User: @Snasen
+            Channel: #bloop
+            Role: @himebot
+            Everyone: @everyone
+            Here: @here
             """;
-        Assert.That(actual, Is.EqualTo(expected));
+        ReplyAssert.That(actual, expected, "", withReply);
     }
     
     [TestCase(true)]
