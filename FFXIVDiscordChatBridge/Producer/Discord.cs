@@ -8,7 +8,7 @@ namespace FFXIVDiscordChatBridge.Producer;
 
 public class Discord : IDiscord
 {
-    public const string XIVAPI_CLIENT_STRING = "XIVAPI";
+    public const string XIVAPIClientString = "XIVAPI";
 
     private readonly ILogger<Discord> _logger;
     private readonly HttpClient _xivapiClient;
@@ -19,7 +19,7 @@ public class Discord : IDiscord
     public Discord(ILogger<Discord> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDiscordClientWrapper discordClientWrapper)
     {
         _logger = logger;
-        _xivapiClient = httpClientFactory.CreateClient(XIVAPI_CLIENT_STRING);
+        _xivapiClient = httpClientFactory.CreateClient(XIVAPIClientString);
         _discordWebhookURL = configuration["discordWebhookURL"] ?? throw new InvalidOperationException();
         _discordClientWrapper = discordClientWrapper;
     }

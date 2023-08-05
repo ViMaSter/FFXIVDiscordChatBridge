@@ -12,20 +12,20 @@ public class DiscordMessageConverter
     private readonly ILogger<DiscordMessageConverter> _logger;
     private readonly IDiscordClientWrapper _discordWrapper;
     
-    private const string FFXIV_ARROW = ""; // this will render as '6' or '?' outside of FFXIV
+    private const string FFXIVArrow = ""; // this will render as '6' or '?' outside of FFXIV
 
     private static readonly string[] Formats = {
         "[{0}] in response to [{1}]:" + Environment.NewLine +
-        FFXIV_ARROW+" {2}",
+        FFXIVArrow+" {2}",
         
         "[{0}] @ [{1}]:" + Environment.NewLine +
-        FFXIV_ARROW+" {2}",
+        FFXIVArrow+" {2}",
         
         "[{0}] replying to [{1}]:" + Environment.NewLine +
-        FFXIV_ARROW+" {2}",
+        FFXIVArrow+" {2}",
         
         "[{0}] responding to [{1}]:" + Environment.NewLine +
-        FFXIV_ARROW+" {2}",
+        FFXIVArrow+" {2}",
         
         "[{0}] in response to [{1}]:" + Environment.NewLine +
         "> {2}",
@@ -185,7 +185,7 @@ public class DiscordMessageConverter
     private void ApplyReplyWrapper(IMessage socketUserMessage, ref string input, string? fromUser, EventType eventType)
     {
         var originalMessage = _discordWrapper.Channel!.GetMessageAsync(socketUserMessage.Reference.MessageId.Value).Result;
-        if (originalMessage is not RestUserMessage originalUserMessage)
+        if (originalMessage is not IUserMessage originalUserMessage)
         {
             _logger.LogInformation("Received reply to non-UserMessage from Discord: {Message}", originalMessage);
             return;
@@ -193,8 +193,8 @@ public class DiscordMessageConverter
 
         var toUserDisplayName = originalUserMessage.Author switch
         {
-            SocketGuildUser toUser => _usernameMapping.GetMappingFromDiscordUsername(toUser.Username) ?? toUser.Username,
-            RestWebhookUser toBot => toBot.Username,
+            IWebhookUser toBot => toBot.Username,
+            IGuildUser toUser => _usernameMapping.GetMappingFromDiscordUsername(toUser.Username) ?? toUser.Username,
             _ => input
         };
 

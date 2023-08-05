@@ -6,8 +6,8 @@ namespace FFXIVHelpers.Persistence;
 
 public class FilePersistence : IPersistence
 {
-    private const string MAPPING_FILE_NAME = "usernameMappings.json";
-    private readonly string _absolutePathToMappingFile = Path.Combine(Directory.GetCurrentDirectory(), MAPPING_FILE_NAME);
+    private const string MappingFileName = "usernameMappings.json";
+    private readonly string _absolutePathToMappingFile = Path.Combine(Directory.GetCurrentDirectory(), MappingFileName);
     private readonly JsonSerializerSettings _jsonSerializerSettings = new()
     {
         Converters = new List<JsonConverter>
@@ -18,7 +18,7 @@ public class FilePersistence : IPersistence
     
     public static void DeleteMappingFile()
     {
-        var absolutePathToMappingFile = Path.Combine(Directory.GetCurrentDirectory(), MAPPING_FILE_NAME);
+        var absolutePathToMappingFile = Path.Combine(Directory.GetCurrentDirectory(), MappingFileName);
         if (File.Exists(absolutePathToMappingFile))
         {
             File.Delete(absolutePathToMappingFile);
