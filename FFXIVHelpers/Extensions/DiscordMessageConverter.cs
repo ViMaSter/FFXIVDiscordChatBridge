@@ -71,11 +71,7 @@ public class DiscordMessageConverter
 
     public string ToFFXIVCompatible(IMessage socketMessage, EventType eventType)
     {
-        if (socketMessage.Author is not IGuildUser guildUser)
-        {
-            throw new InvalidOperationException("Message received from non-guild user");
-        }
-
+        var guildUser = socketMessage.Author as IGuildUser;
         var textContent = socketMessage.Content;
         var trackedTags = socketMessage.Tags.Select(AddTrackableIndex).ToList();
 
@@ -86,12 +82,8 @@ public class DiscordMessageConverter
             {
                 case TagType.Emoji:
                 {
-                    if (socketMessageTag.Tag.Value is not Emote e)
-                    {
-                        continue;
-                    }
-
-                    var replacement = $":{e.Name}:";
+                    var emote = (Emote)socketMessageTag.Tag.Value;
+                    var replacement = $":{emote.Name}:";
                     var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
 
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
@@ -100,12 +92,8 @@ public class DiscordMessageConverter
                 }
                 case TagType.UserMention:
                 {
-                    if (socketMessageTag.Tag.Value is not IGuildUser u)
-                    {
-                        continue;
-                    }
-
-                    var replacement = $"@{u.Nickname}";
+                    var user = (IGuildUser)socketMessageTag.Tag.Value;
+                    var replacement = $"@{user.Nickname}";
                     var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
 
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
@@ -115,12 +103,9 @@ public class DiscordMessageConverter
 
                 case TagType.ChannelMention:
                 {
-                    if (socketMessageTag.Tag.Value is not IGuildChannel c)
-                    {
-                        continue;
-                    }
+                    var channel = (IGuildChannel)socketMessageTag.Tag.Value;
 
-                    var replacement = $"#{c.Name}";
+                    var replacement = $"#{channel.Name}";
                     var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
 
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);
@@ -129,12 +114,8 @@ public class DiscordMessageConverter
                 }
                 case TagType.RoleMention:
                 {
-                    if (socketMessageTag.Tag.Value is not IRole r)
-                    {
-                        continue;
-                    }
-
-                    var replacement = $"@{r.Name}";
+                    var role = (IRole)socketMessageTag.Tag.Value;
+                    var replacement = $"@{role.Name}";
                     var replacementLengthDifference = replacement.Length - socketMessageTag.Tag.Length;
 
                     textContent = textContent.Remove(socketMessageTag.Index, socketMessageTag.Tag.Length).Insert(socketMessageTag.Index, replacement);

@@ -41,7 +41,23 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Content).Returns(MESSAGE_CONTENT);
         
         var result = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.AreEqual($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}", result);
+        Assert.That(result, Is.EqualTo($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}"));
+    }
+    
+    [Test]
+    public void SkipsEmptyLines()
+    {
+        var discordMessageMock = new Mock<IMessage>();
+        var discordUserMock = new Mock<IGuildUser>();
+        discordUserMock.SetupGet(user => user.DisplayName).Returns(USER_DISPLAY_NAME);
+        discordMessageMock.SetupGet(message => message.Author).Returns(discordUserMock.Object);
+        discordMessageMock.SetupGet(message => message.Tags).Returns(new List<ITag>());
+        discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
+        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
+        discordMessageMock.SetupGet(message => message.Content).Returns(MESSAGE_CONTENT+Environment.NewLine+Environment.NewLine);
+        
+        var result = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
+        Assert.That(result, Is.EqualTo($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}"));
     }
     
     [Test]
@@ -62,7 +78,7 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Content).Returns(MESSAGE_CONTENT);
         
         var result = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.AreEqual($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}{Environment.NewLine}{USER_DISPLAY_NAME} sent an attachment: '{ATTACHMENT_FILENAME}'", result);
+        Assert.That(result, Is.EqualTo($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}{Environment.NewLine}{USER_DISPLAY_NAME} sent an attachment: '{ATTACHMENT_FILENAME}'"));
     }
     
     [Test]
@@ -84,11 +100,12 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Content).Returns(MESSAGE_CONTENT);
         
         var result = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        Assert.AreEqual($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}{Environment.NewLine}{USER_DISPLAY_NAME} sent a '{STICKER_NAME}' sticker: https://media.discordapp.net/stickers/{STICKER_ID}.webp", result);
+        Assert.That(result, Is.EqualTo($"[{USER_DISPLAY_NAME}]: {MESSAGE_CONTENT}{Environment.NewLine}{USER_DISPLAY_NAME} sent a '{STICKER_NAME}' sticker: https://media.discordapp.net/stickers/{STICKER_ID}.webp"));
     }
     
     [Test]
-    public void CanHandleTags()
+    public void 
+    CanHandleTags()
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -103,11 +120,20 @@ public class DiscordMessageConverterTests
         discordMessageTagMock.SetupGet(tag => tag.Key).Returns(737363893571027115);
         discordMessageTagMock.SetupGet(tag => tag.Value).Returns(eyesEmojiId);
         
+        var user = new Mock<IGuildUser>();
+        user.SetupGet(r => r.Nickname).Returns("Snasen");
+        var discordUserTackMock = new Mock<ITag>();
+        discordUserTackMock.SetupGet(tag => tag.Type).Returns(TagType.UserMention);
+        discordUserTackMock.SetupGet(tag => tag.Index).Returns(59);
+        discordUserTackMock.SetupGet(tag => tag.Length).Returns(20);
+        discordUserTackMock.SetupGet(tag => tag.Key).Returns(94583392179322880);
+        discordUserTackMock.SetupGet(tag => tag.Value).Returns(user.Object);
+        
         var channel = new Mock<IGuildChannel>();
         channel.SetupGet(r => r.Name).Returns("bloop");
         var discordChannelMock = new Mock<ITag>();
         discordChannelMock.SetupGet(tag => tag.Type).Returns(TagType.ChannelMention);
-        discordChannelMock.SetupGet(tag => tag.Index).Returns(78);
+        discordChannelMock.SetupGet(tag => tag.Index).Returns(89);
         discordChannelMock.SetupGet(tag => tag.Length).Returns(22);
         discordChannelMock.SetupGet(tag => tag.Key).Returns(1032389530248032356);
         discordChannelMock.SetupGet(tag => tag.Value).Returns(channel.Object);
@@ -117,7 +143,7 @@ public class DiscordMessageConverterTests
         
         var discordRoleMock = new Mock<ITag>();
         discordRoleMock.SetupGet(tag => tag.Type).Returns(TagType.RoleMention);
-        discordRoleMock.SetupGet(tag => tag.Index).Returns(107);
+        discordRoleMock.SetupGet(tag => tag.Index).Returns(118);
         discordRoleMock.SetupGet(tag => tag.Length).Returns(22);
         discordRoleMock.SetupGet(tag => tag.Key).Returns(366743881838100480);
         discordRoleMock.SetupGet(tag => tag.Value).Returns(role.Object);
@@ -126,7 +152,7 @@ public class DiscordMessageConverterTests
         everyone.SetupGet(r => r.Name).Returns("@everyone");
         var discordEveryoneMock = new Mock<ITag>();
         discordEveryoneMock.SetupGet(tag => tag.Type).Returns(TagType.EveryoneMention);
-        discordEveryoneMock.SetupGet(tag => tag.Index).Returns(140);
+        discordEveryoneMock.SetupGet(tag => tag.Index).Returns(151);
         discordEveryoneMock.SetupGet(tag => tag.Length).Returns(9);
         discordEveryoneMock.SetupGet(tag => tag.Key).Returns(0);
         discordEveryoneMock.SetupGet(tag => tag.Value).Returns(everyone.Object);
@@ -135,7 +161,7 @@ public class DiscordMessageConverterTests
         here.SetupGet(r => r.Name).Returns("@everyone");
         var discordHereMock = new Mock<ITag>();
         discordHereMock.SetupGet(tag => tag.Type).Returns(TagType.HereMention);
-        discordHereMock.SetupGet(tag => tag.Index).Returns(156);
+        discordHereMock.SetupGet(tag => tag.Index).Returns(167);
         discordHereMock.SetupGet(tag => tag.Length).Returns(5);
         discordHereMock.SetupGet(tag => tag.Key).Returns(0);
         discordHereMock.SetupGet(tag => tag.Value).Returns(here.Object);
@@ -144,6 +170,7 @@ public class DiscordMessageConverterTests
         {
             discordMessageTagMock.Object,
             discordChannelMock.Object,
+            discordUserTackMock.Object,
             discordRoleMock.Object,
             discordEveryoneMock.Object,
             discordHereMock.Object
@@ -153,7 +180,7 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Content).Returns("""
         Emoji: 👀
         Server Emoji: <:eyes_r:737363893571027115>
-        User: @vimaster
+        User: <@94583392179322880>
         Channel: <#1032389530248032356>
         Role: <@&366743881838100480>
         Everyone: @everyone
@@ -164,7 +191,7 @@ public class DiscordMessageConverterTests
         const string EXPECTED = """
             [displayName]: Emoji: :eyes:
             [displayName]: Server Emoji: :eyes_r:
-            [displayName]: User: @vimaster
+            [displayName]: User: @Snasen
             [displayName]: Channel: #bloop
             [displayName]: Role: @himebot
             [displayName]: Everyone: @everyone
