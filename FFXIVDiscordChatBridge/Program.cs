@@ -61,7 +61,7 @@ namespace FFXIVDiscordChatBridge
             var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(10);  
 
             services
-                .AddHttpClient(Producer.Discord.XIVAPIClientString, client => client.BaseAddress = new Uri("https://xivapi.com"))
+                .AddHttpClient(Producer.Discord.XIVAPI_CLIENT_STRING, client => client.BaseAddress = new Uri("https://xivapi.com"))
                 .AddPolicyHandler(retryPolicy)
                 .AddPolicyHandler(timeoutPolicy);
             

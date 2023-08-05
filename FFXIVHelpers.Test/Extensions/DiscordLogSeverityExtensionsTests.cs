@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Discord;
+﻿using Discord;
 using FFXIVHelpers.Extensions;
 using Microsoft.Extensions.Logging;
 
