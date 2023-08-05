@@ -104,8 +104,7 @@ public class DiscordMessageConverterTests
     }
     
     [Test]
-    public void 
-    CanHandleTags()
+    public void CanHandleTags()
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -198,5 +197,23 @@ public class DiscordMessageConverterTests
             [displayName]: Here: @here
             """;
         Assert.That(result, Is.EqualTo(EXPECTED));
+    }
+    
+    [Test]
+    public void ThrowsForUnsupportedTags()
+    {
+        var discordMessageMock = new Mock<IMessage>();
+        
+        var discordMessageTagMock = new Mock<ITag>();
+        discordMessageTagMock.SetupGet(tag => tag.Type).Returns((TagType)99);
+        
+        discordMessageMock.SetupGet(message => message.Tags).Returns(new List<ITag>()
+        {
+            discordMessageTagMock.Object
+        });
+        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<IStickerItem>());
+        discordMessageMock.SetupGet(message => message.Content).Returns(string.Empty);
+        
+        Assert.Throws<ArgumentOutOfRangeException>(() => _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent));
     }
 }
