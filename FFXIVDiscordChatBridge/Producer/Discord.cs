@@ -79,12 +79,14 @@ public class Discord : IDiscord
     private readonly HttpClient _xivapiClient;
     private readonly Dictionary<Character, string> _avatarCache = new();
     private readonly string _discordWebhookURL;
+    private readonly IDiscordClientWrapper _discordClientWrapper;
 
-    public Discord(ILogger<Discord> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public Discord(ILogger<Discord> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDiscordClientWrapper discordClientWrapper)
     {
         _logger = logger;
         _xivapiClient = httpClientFactory.CreateClient(XIVAPIClientString);
         _discordWebhookURL = configuration["discordWebhookURL"] ?? throw new InvalidOperationException();
+        _discordClientWrapper = discordClientWrapper;
     }
     
     public async Task Send(Character sender, string? discordMappedName, string message)
@@ -105,7 +107,7 @@ public class Discord : IDiscord
             displayName = discordMappedName;
         }
         
-        var webhookMessage = new RootObject(message, displayName, _avatarCache[sender]);
+        var webhookMessage = new RootObject(message, displayName, _avatarCache.TryGetValue(sender, out var value) ? value : _discordClientWrapper.Client.Rest.CurrentUser.GetAvatarUrl(ImageFormat.Png, 512));
         var responseMessage = await _xivapiClient.PostAsJsonAsync(_discordWebhookURL, webhookMessage);
         _logger.LogInformation("Discord returned {StatusCode}: {Content}", responseMessage.StatusCode, await responseMessage.Content.ReadAsStringAsync());
     }
