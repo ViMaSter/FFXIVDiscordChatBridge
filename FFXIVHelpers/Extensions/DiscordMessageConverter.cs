@@ -192,18 +192,12 @@ public class DiscordMessageConverter
 
     private void ApplyReplyWrapper(IMessage socketUserMessage, ref string input, string? fromUser, EventType eventType)
     {
-        var originalMessage = _discordWrapper.Channel!.GetMessageAsync(socketUserMessage.Reference.MessageId.Value).Result;
-        if (originalMessage is not IUserMessage originalUserMessage)
-        {
-            _logger.LogInformation("Received reply to non-UserMessage from Discord: {Message}", originalMessage);
-            return;
-        }
-
+        var originalUserMessage = (IUserMessage)_discordWrapper.Channel!.GetMessageAsync(socketUserMessage.Reference.MessageId.Value).Result;
         var toUserDisplayName = originalUserMessage.Author switch
         {
             IWebhookUser toBot => toBot.Username,
-            IGuildUser toUser => _usernameMapping.GetMappingFromDiscordUsername(toUser.Username) ?? toUser.Username,
-            _ => input
+            IGuildUser toUser => _usernameMapping.GetMappingFromDiscordUsername(toUser.Username) ?? toUser.DisplayName,
+            _ => throw new NotSupportedException($"Unsupported user type: {originalUserMessage.Author.GetType().FullName}")
         };
 
         var (prefix, indent) = NextFormat;

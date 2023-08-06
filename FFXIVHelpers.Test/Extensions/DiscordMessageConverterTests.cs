@@ -13,7 +13,7 @@ public class DiscordMessageConverterTests
 {
     private static class ReplyAssert
     {
-        public static void That(string actual, string expectedWrittenContent, string expectedGeneratedContent, bool withReply)
+        public static void That(string actual, string expectedWrittenContent, string expectedGeneratedContent, ReplyType replyType)
         {
             Console.WriteLine("----------");
             Console.WriteLine(nameof(actual)+":");
@@ -27,17 +27,18 @@ public class DiscordMessageConverterTests
             Console.WriteLine("----------");
 
             
-            if (!withReply)
+            if (replyType == ReplyType.None)
             {
                 var expected = $"{string.Join(Environment.NewLine, expectedWrittenContent.ReplaceLineEndings().Split(Environment.NewLine).Select(line => $"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim();
                 Assert.That(actual, Is.EqualTo(expected));
                 return;
             }
+            
             var content = $"{expectedWrittenContent}{Environment.NewLine}{expectedGeneratedContent}".Trim();
             var actualLines = actual.Split(Environment.NewLine);
             var expectedLines = $"{content}".Split(Environment.NewLine);
             Assert.That(actualLines[0], Contains.Substring(UserDisplayName));
-            Assert.That(actualLines[0], Contains.Substring(ReplyUserDisplayName));
+            Assert.That(actualLines[0], replyType == ReplyType.User ? Contains.Substring(ReplyUserDisplayName) : Contains.Substring(ReplyBotDisplayName));
             for (var index = 0; index < expectedLines.Length; index++)
             {
                 var expectedLine = expectedLines[index];
@@ -52,10 +53,20 @@ public class DiscordMessageConverterTests
     private DiscordMessageConverter _discordMessageConverter = null!;
     private const string UserDisplayName = "displayName";
     private const string ReplyUserDisplayName = "ReplyUser";
+    private const string ReplyBotDisplayName = "ReplyBot";
+    private const string ReplyUnsupportedDisplayName = "UnsupportedName";
     private const string MessageContent = "message content";
     private const string AttachmentFilename = "originalFilename.extension";
     private const string StickerName = nameof(StickerName);
     private const ulong StickerId = 123456789;
+
+    public enum ReplyType
+    {
+        None,
+        User,
+        Unsupported,
+        Bot
+    }
 
     [SetUp]
     public void Setup()
@@ -63,27 +74,41 @@ public class DiscordMessageConverterTests
         var discordEmojiConverter = new DiscordEmojiConverter();
         var usernameMapping = new FFXIVHelpers.UsernameMapping(NullLogger<FFXIVHelpers.UsernameMapping>.Instance, new InMemoryPersistence(new List<Mapping>()));
         var logger = NullLogger<DiscordMessageConverter>.Instance;
-        
-        var responseMock = Mock.Of<IUserMessage>(m => m.Author == Mock.Of<IGuildUser>(u => u.Username == "ReplyUser"));
-        var channel = Mock.Of<ISocketMessageChannel>(channel => channel.GetMessageAsync(It.IsAny<ulong>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()) == Task.FromResult((IMessage)responseMock));
-        var discordWrapper = Mock.Of<IDiscordClientWrapper>(wrapper => wrapper.Channel == channel);
 
+        var channel = new Mock<ISocketMessageChannel>();
+        var messagesByType = new Dictionary<ReplyType, IMessage>()
+        {
+            { ReplyType.None, null! },
+            { ReplyType.User, Mock.Of<IUserMessage>(message => message.Author == Mock.Of<IGuildUser>(user => user.DisplayName == ReplyUserDisplayName)) },
+            { ReplyType.Bot, Mock.Of<IUserMessage>(message => message.Author == Mock.Of<IWebhookUser>(user => user.Username == ReplyBotDisplayName)) },
+            { ReplyType.Unsupported, Mock.Of<IUserMessage>(message => message.Author == Mock.Of<IUser>(user => user.Username == ReplyUnsupportedDisplayName)) },
+        };
+
+        channel.Setup(c => c.GetMessageAsync(It.IsAny<ulong>(), It.IsAny<CacheMode>(), It.IsAny<RequestOptions>()))
+            .Returns<ulong, CacheMode, RequestOptions>((id, mode, options) =>
+            {
+                var user = new Mock<IUser>();
+                user.SetupGet(u => u.Username).Returns(ReplyUserDisplayName);
+                return Task.FromResult(messagesByType[(ReplyType)id]);
+            });
+        var discordWrapper = Mock.Of<IDiscordClientWrapper>(wrapper => wrapper.Channel == channel.Object);
         _discordMessageConverter = new DiscordMessageConverter(discordEmojiConverter, usernameMapping, logger, discordWrapper);
     }
     
-    private static void ApplyReplyChanges(ref Mock<IMessage> responseMessage)
+    private static void ApplyReplyChanges(ref Mock<IMessage> responseMessage, ReplyType replyType)
     {
-        var discordMessageReferenceMock = new Mock<IUserMessage>();
-        var replyAuthor = new Mock<IGuildUser>();
-        replyAuthor.SetupGet(user => user.DisplayName).Returns(ReplyUserDisplayName);
-        discordMessageReferenceMock.SetupGet(messageReference => messageReference.Author).Returns(replyAuthor.Object);
-        var messageReference = new MessageReference(123456789, 987654321, 123456789);
-        responseMessage.SetupGet(message => message.Reference).Returns(messageReference);
+        if (replyType == ReplyType.None)
+        {
+            return;
+        }
+        
+        responseMessage.SetupGet(message => message.Reference).Returns(new MessageReference((ulong)replyType, 987654321, 123456789));
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void CanHandleSimpleMessage(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void CanHandleSimpleMessage(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -93,19 +118,17 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
         discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
         discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
         const string expected = $"{MessageContent}";
-        ReplyAssert.That(actual, expected, "", withReply);
+        ReplyAssert.That(actual, expected, "", replyType);
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void SkipsEmptyLines(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void SkipsEmptyLines(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -115,19 +138,17 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
         discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
         discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent+Environment.NewLine+Environment.NewLine);
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
         const string expected = $"{MessageContent}";
-        ReplyAssert.That(actual, expected, "", withReply);
+        ReplyAssert.That(actual, expected, "", replyType);
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void CanHandleAttachments(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void CanHandleAttachments(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -142,18 +163,16 @@ public class DiscordMessageConverterTests
         });
         discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
         discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent an attachment: '{AttachmentFilename}'", withReply);
+        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent an attachment: '{AttachmentFilename}'", replyType);
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void CanHandleStickers(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void CanHandleStickers(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -169,19 +188,16 @@ public class DiscordMessageConverterTests
             discordStickerMock.Object
         });
         discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
-        
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp", withReply);
+        ReplyAssert.That(actual, MessageContent, $"{UserDisplayName} sent a '{StickerName}' sticker: https://media.discordapp.net/stickers/{StickerId}.webp", replyType);
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void CanHandleTags(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void CanHandleTags(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -262,10 +278,7 @@ public class DiscordMessageConverterTests
         Everyone: @everyone
         Here: @here
         """.ReplaceLineEndings().Replace("\r\n", "\n"));
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
         const string expected = """
@@ -277,12 +290,13 @@ public class DiscordMessageConverterTests
             Everyone: @everyone
             Here: @here
             """;
-        ReplyAssert.That(actual, expected, "", withReply);
+        ReplyAssert.That(actual, expected, "", replyType);
     }
     
-    [TestCase(true)]
-    [TestCase(false)]
-    public void ThrowsForUnsupportedTags(bool withReply)
+    [TestCase(ReplyType.None)]
+    [TestCase(ReplyType.User)]
+    [TestCase(ReplyType.Bot)]
+    public void ThrowsForUnsupportedTags(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         
@@ -295,16 +309,14 @@ public class DiscordMessageConverterTests
         });
         discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<IStickerItem>());
         discordMessageMock.SetupGet(message => message.Content).Returns(string.Empty);
-        if (withReply)
-        {
-            ApplyReplyChanges(ref discordMessageMock);
-        }
+        ApplyReplyChanges(ref discordMessageMock, replyType);
         
         Assert.Throws<ArgumentOutOfRangeException>(() => _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent));
     }
-
+    
     [Test]
-    public void HasVaryingFormats()
+    [TestCase(ReplyType.Unsupported)]
+    public void ThrowsForUnsupportedUserType(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
         var discordUserMock = new Mock<IGuildUser>();
@@ -314,7 +326,26 @@ public class DiscordMessageConverterTests
         discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
         discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
         discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
-        ApplyReplyChanges(ref discordMessageMock);
+        ApplyReplyChanges(ref discordMessageMock, replyType);
+        var exception = Assert.Throws<NotSupportedException>(() => _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent));
+        Console.WriteLine($"Content of expected exception:{Environment.NewLine}{exception}");
+    }
+
+    [Test]
+    [TestCase(ReplyType.Bot)]
+    [TestCase(ReplyType.User)]
+    [Parallelizable(ParallelScope.None)] // NextFormat is not thread-safe
+    public void HasVaryingFormats(ReplyType replyType)
+    {
+        var discordMessageMock = new Mock<IMessage>();
+        var discordUserMock = new Mock<IGuildUser>();
+        discordUserMock.SetupGet(user => user.DisplayName).Returns(UserDisplayName);
+        discordMessageMock.SetupGet(message => message.Author).Returns(discordUserMock.Object);
+        discordMessageMock.SetupGet(message => message.Tags).Returns(new List<ITag>());
+        discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
+        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
+        discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
+        ApplyReplyChanges(ref discordMessageMock, replyType);
  
         var messages = new List<string>();
         var previousLength = 0;
