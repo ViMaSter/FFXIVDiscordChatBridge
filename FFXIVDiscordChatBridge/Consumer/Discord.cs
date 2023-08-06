@@ -108,6 +108,11 @@ public class Discord : IDiscordConsumer
         {
             return;
         }
+
+        if (socketMessage.Author is not SocketGuildUser guildUser)
+        {
+            return;
+        }
         
         var fullMessage = _discordMessageConverter.ToFFXIVCompatible(socketMessage, eventType);
 
