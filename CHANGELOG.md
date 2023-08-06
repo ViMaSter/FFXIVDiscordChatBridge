@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.4.0"></a>
+## [2.4.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.4.0) (2023-8-6)
+
+### Features
+
+* Forwards Discord reactions to FFXIV ([ec34056](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/ec3405642464209945279d2fcf7f35d7d5772c7e))
+
+### Bug Fixes
+
+* Handles non-server-specific emotes ([8cfd0c8](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/8cfd0c889620d57c1701d4e43e0839f2ac37037d))
+
 <a name="2.3.0"></a>
 ## [2.3.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.3.0) (2023-8-6)
 
