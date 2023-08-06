@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Version>2.2.1</Version>
+        <Version>2.3.0</Version>
         <EnableWindowsTargeting>true</EnableWindowsTargeting>
         <OutDir>bin\$(Configuration)\</OutDir>
     </PropertyGroup>
