@@ -15,17 +15,19 @@ public class Discord : IDiscordConsumer
     private readonly IFFXIV _ffxivProducer;
     private readonly UsernameMapping _usernameMapping;
     private readonly DiscordMessageConverter _discordMessageConverter;
+    private readonly DiscordEmojiConverter _discordEmojiConverter;
     private readonly IDiscordClientWrapper _discordWrapper;
     // ReSharper disable once NotAccessedField.Local - Required to manage lifetime
     private Timer? _displayNameRefreshTimer;
 
-    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping, DiscordMessageConverter discordMessageConverter)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping, DiscordMessageConverter discordMessageConverter, DiscordEmojiConverter discordEmojiConverter)
     {
         _logger = logger;
         _discordWrapper = discordWrapper;
         _ffxivProducer = ffxivProducer;
         _usernameMapping = usernameMapping;
         _discordMessageConverter = discordMessageConverter;
+        _discordEmojiConverter = discordEmojiConverter;
     }
 
     public Task Start()
@@ -71,8 +73,17 @@ public class Discord : IDiscordConsumer
             _ => throw new NotSupportedException($"Unsupported user type: {socketReaction.User.Value.GetType().FullName}")
         };
         
-        _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {socketReaction.Emote.Name}").Wait();
-        return Task.CompletedTask;
+        switch (socketReaction.Emote)
+        {
+            case Emote:
+                _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {socketReaction.Emote.Name}").Wait();
+                return Task.CompletedTask;
+            case Emoji:
+                _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {_discordEmojiConverter.ReplaceEmoji(socketReaction.Emote.Name)}").Wait();
+                return Task.CompletedTask;
+            default:
+                throw new NotSupportedException($"Unsupported emote type: {socketReaction.Emote.GetType().FullName}");
+        }
     }
 
     private Task SetupDisplayNameLoop()
