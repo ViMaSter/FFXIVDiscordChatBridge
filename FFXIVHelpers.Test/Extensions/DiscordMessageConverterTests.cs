@@ -29,7 +29,8 @@ public class DiscordMessageConverterTests
             
             if (!withReply)
             {
-                Assert.That(actual, Is.EqualTo($"{string.Join(Environment.NewLine, expectedWrittenContent.Split(Environment.NewLine).Select(line=>$"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim()));
+                var expected = $"{string.Join(Environment.NewLine, expectedWrittenContent.Split(Environment.NewLine).Select(line => $"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim();
+                Assert.That(actual, Is.EqualTo(expected));
                 return;
             }
             var content = $"{expectedWrittenContent}{Environment.NewLine}{expectedGeneratedContent}".Trim();
@@ -300,5 +301,36 @@ public class DiscordMessageConverterTests
         }
         
         Assert.Throws<ArgumentOutOfRangeException>(() => _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent));
+    }
+
+    [Test]
+    public void HasVaryingFormats()
+    {
+        var discordMessageMock = new Mock<IMessage>();
+        var discordUserMock = new Mock<IGuildUser>();
+        discordUserMock.SetupGet(user => user.DisplayName).Returns(UserDisplayName);
+        discordMessageMock.SetupGet(message => message.Author).Returns(discordUserMock.Object);
+        discordMessageMock.SetupGet(message => message.Tags).Returns(new List<ITag>());
+        discordMessageMock.SetupGet(message => message.Attachments).Returns(new List<IAttachment>());
+        discordMessageMock.SetupGet(message => message.Stickers).Returns(new List<ISticker>());
+        discordMessageMock.SetupGet(message => message.Content).Returns(MessageContent);
+        ApplyReplyChanges(ref discordMessageMock);
+ 
+        var messages = new List<string>();
+        var previousLength = 0;
+        do
+        {
+            Assert.That(previousLength, Is.LessThan(100));
+            previousLength = messages.Count;
+            var newItem = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
+            if (messages.Contains(newItem))
+            {
+                break;
+            }
+            messages.Add(newItem);
+        } while (previousLength != messages.Count);
+        
+        Console.WriteLine("Has {0} reply variations", messages.Count);
+        Assert.That(messages.Count, Is.GreaterThan(1));
     }
 }
