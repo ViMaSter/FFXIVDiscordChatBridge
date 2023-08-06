@@ -26,7 +26,19 @@ namespace FFXIVDiscordChatBridge
             };
             AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
             {
+                if (e.Exception is IOException && e.Exception.InnerException is System.Net.Sockets.SocketException)
+                {
+                    Logger.Warn(e.Exception, "known socket excepsion: {Exception}");
+                    return;
+                }
+                
                 Logger.Error(e.Exception);
+                Environment.Exit(2);
+            };
+            TaskScheduler.UnobservedTaskException += (_, e) =>
+            {
+                Logger.Error(e.Exception);
+                Environment.Exit(3);
             };
 
             Logger.Info("Starting FFXIVDiscordChatBridge");
