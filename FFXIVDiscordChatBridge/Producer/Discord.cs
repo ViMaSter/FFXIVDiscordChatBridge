@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
+using Discord;
 using FFXIVDiscordChatBridge.Producer.DiscordWebhookRequest;
+using FFXIVHelpers;
 using FFXIVHelpers.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
