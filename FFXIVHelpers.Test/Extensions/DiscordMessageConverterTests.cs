@@ -8,7 +8,7 @@ using Moq;
 
 namespace FFXIVHelpers.Test.Extensions;
 
-[Parallelizable(ParallelScope.All)]
+[Parallelizable(ParallelScope.Fixtures)] // NextFormat is not thread-safe
 public class DiscordMessageConverterTests
 {
     private static class ReplyAssert
@@ -281,7 +281,7 @@ public class DiscordMessageConverterTests
         ApplyReplyChanges(ref discordMessageMock, replyType);
         
         var actual = _discordMessageConverter.ToFFXIVCompatible(discordMessageMock.Object, DiscordMessageConverter.EventType.MessageSent);
-        const string expected = """
+        string expected = """
             Emoji: :eyes:
             Server Emoji: :eyes_r:
             User: @Snasen
@@ -289,7 +289,7 @@ public class DiscordMessageConverterTests
             Role: @himebot
             Everyone: @everyone
             Here: @here
-            """;
+            """.ReplaceLineEndings().Replace("\r\n", "\n");
         ReplyAssert.That(actual, expected, "", replyType);
     }
     
@@ -334,7 +334,6 @@ public class DiscordMessageConverterTests
     [Test]
     [TestCase(ReplyType.Bot)]
     [TestCase(ReplyType.User)]
-    [Parallelizable(ParallelScope.None)] // NextFormat is not thread-safe
     public void HasVaryingFormats(ReplyType replyType)
     {
         var discordMessageMock = new Mock<IMessage>();
