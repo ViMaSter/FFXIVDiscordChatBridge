@@ -97,21 +97,21 @@ public class Discord : IDiscordConsumer
         return Task.CompletedTask;
     }
     
-    private async Task HandleChannelMessage(SocketUserMessage socketMessage, DiscordMessageConverter.EventType eventType)
+    private Task HandleChannelMessage(SocketUserMessage socketMessage, DiscordMessageConverter.EventType eventType)
     {
         if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (socketMessage.Channel.Id != _discordWrapper.Channel!.Id)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         if (socketMessage.Author is not SocketGuildUser guildUser)
         {
-            return;
+            return Task.CompletedTask;
         }
         
         var fullMessage = _discordMessageConverter.ToFFXIVCompatible(socketMessage, eventType);
@@ -126,5 +126,7 @@ public class Discord : IDiscordConsumer
 
             _ffxivProducer.Send(line).Wait();
         }
+        
+        return Task.CompletedTask;
     }
 }
