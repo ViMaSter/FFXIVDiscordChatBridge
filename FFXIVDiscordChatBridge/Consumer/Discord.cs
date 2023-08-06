@@ -32,7 +32,8 @@ public class Discord : IDiscordConsumer
     {
         _discordWrapper.Client.MessageReceived += (message) => ClientOnMessageReceived(message, DiscordMessageConverter.EventType.MessageSent);
         _discordWrapper.Client.MessageUpdated += (_, socketMessage, _) => ClientOnMessageReceived(socketMessage, DiscordMessageConverter.EventType.MessageEdited);
-        
+        _discordWrapper.Client.ReactionAdded += (_, _, socketReaction) => ClientOnReactionReceived(socketReaction);
+
         if (_discordWrapper.Client.ConnectionState != ConnectionState.Connected)
         {
             _discordWrapper.Client.Ready += SetupDisplayNameLoop;
@@ -43,6 +44,35 @@ public class Discord : IDiscordConsumer
         }
 
         return Task.Delay(-1);
+    }
+
+    private Task ClientOnReactionReceived(SocketReaction socketReaction)
+    {
+        // fetch message from channel
+        var message = _discordWrapper.Channel!.GetMessageAsync(socketReaction.MessageId).Result;
+        if (message == null)
+        {
+            _logger.LogInformation("Received reaction on unknown message: {Message}", socketReaction.MessageId);
+            return Task.CompletedTask;
+        }
+
+        var toUserDisplayName = message.Author switch
+        {
+            IWebhookUser toBot => toBot.Username,
+            IGuildUser toUser => _usernameMapping.GetMappingFromDiscordUsername(toUser.Username) ?? toUser.DisplayName,
+            _ => throw new NotSupportedException($"Unsupported user type: {message.Author.GetType().FullName}")
+        };
+        
+        var fromUser = _discordWrapper.Channel.GetUserAsync(socketReaction.UserId).Result;
+        var fromUserDisplayName = fromUser switch
+        {
+            IWebhookUser fromBot => fromBot.Username,
+            IGuildUser fromGuildUser => _usernameMapping.GetMappingFromDiscordUsername(fromGuildUser.Username) ?? fromGuildUser.DisplayName,
+            _ => throw new NotSupportedException($"Unsupported user type: {socketReaction.User.Value.GetType().FullName}")
+        };
+        
+        _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {socketReaction.Emote.Name}").Wait();
+        return Task.CompletedTask;
     }
 
     private Task SetupDisplayNameLoop()
