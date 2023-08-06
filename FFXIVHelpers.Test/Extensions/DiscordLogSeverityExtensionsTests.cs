@@ -11,7 +11,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Critical;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Critical, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Critical));
     }
     
     [Test]
@@ -19,7 +19,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Error;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Error, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Error));
     }
     
     [Test]
@@ -27,7 +27,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Warning;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Warning, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Warning));
     }
     
     [Test]
@@ -35,7 +35,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Info;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Information, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Information));
     }
     
     [Test]
@@ -43,7 +43,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Verbose;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Trace, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Trace));
     }
     
     [Test]
@@ -51,7 +51,7 @@ public class DiscordLogSeverityExtensionsTests
     {
         const LogSeverity discordLogSeverity = LogSeverity.Debug;
         var result = discordLogSeverity.ToNLogSeverity();
-        Assert.AreEqual(LogLevel.Debug, result);
+        Assert.That(result, Is.EqualTo(LogLevel.Debug));
     }
     
     [Test]
