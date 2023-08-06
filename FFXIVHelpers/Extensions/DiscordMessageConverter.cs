@@ -10,24 +10,22 @@ public class DiscordMessageConverter
     private readonly ILogger<DiscordMessageConverter> _logger;
     private readonly IDiscordClientWrapper _discordWrapper;
     
-    private const string FFXIVArrow = ""; // this will render as '6' or '?' outside of FFXIV
-
     private static readonly (string prefix, string indent)[] Formats = {
         new(
             "[{0}] in response to [{1}]:",
-            FFXIVArrow + " {0}"
+            "》 {0}"
         ),
         new(
             "[{0}] @ [{1}]:",
-            FFXIVArrow + " {0}"
+            "》 {0}"
         ),
         new(
             "[{0}] replying to [{1}]:",
-            FFXIVArrow + " {0}"
+            "》 {0}"
         ),
         new(
             "[{0}] responding to [{1}]:",
-            FFXIVArrow + " {0}"
+            "》 {0}"
         ),
         new(
             "[{0}] in response to [{1}]:",
