@@ -5,14 +5,14 @@ namespace FFXIVHelpers.Test.Persistence;
 
 public class FilePersistenceTests
 {
-    private const string DISCORD_USERNAME = "DiscordUsername";
-    private const string FFXIV_USERNAME = "FFXIVUsername";
-    private const string FFXIV_WORLD = "World";
+    private const string DiscordUsername = "DiscordUsername";
+    private const string FFXIVUsername = "FFXIVUsername";
+    private const string FFXIVWorld = "World";
     [Test]
     public void CanLoadMappingsFromFile()
     {
         FilePersistence.DeleteMappingFile();
-        var mapping = Mapping.CreateFromDiscord(DISCORD_USERNAME, new Character(FFXIV_USERNAME, FFXIV_WORLD));
+        var mapping = Mapping.CreateFromDiscord(DiscordUsername, new Character(FFXIVUsername, FFXIVWorld));
         mapping.FFXIV.Confirm();
         var mappings = new List<Mapping>
         {
@@ -27,7 +27,7 @@ public class FilePersistenceTests
             {
                 Assert.That(loadedMappings, Has.Count.EqualTo(1));
                 Assert.That(loadedMappings[0].Discord.Name, Is.EqualTo("DiscordUsername"));
-                Assert.That(loadedMappings[0].FFXIV.Name.Format(CharacterNameDisplay.WithWorld), Is.EqualTo($"{FFXIV_USERNAME}@{FFXIV_WORLD}"));
+                Assert.That(loadedMappings[0].FFXIV.Name.Format(CharacterNameDisplay.WithWorld), Is.EqualTo($"{FFXIVUsername}@{FFXIVWorld}"));
             });
         }
         

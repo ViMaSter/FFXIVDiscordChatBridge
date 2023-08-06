@@ -9,8 +9,8 @@ public class FFXIVByteHandler
 {
     private readonly ILogger<FFXIVByteHandler> _logger;
     private readonly string _chatChannelCode;
-    private const string TELL_CHAT_RECEIVING_CHANNEL = "000D";
-    private IEnumerable<string> MonitoredChannels => new[]{_chatChannelCode, TELL_CHAT_RECEIVING_CHANNEL};
+    private const string TellChatReceivingChannel = "000D";
+    private IEnumerable<string> MonitoredChannels => new[]{_chatChannelCode, TellChatReceivingChannel};
     public Character CurrentCharacter { get; }
 
     public FFXIVByteHandler(ILogger<FFXIVByteHandler> logger, string chatChannelCode, string playerName, string worldName)
@@ -268,7 +268,7 @@ public class FFXIVByteHandler
             return false;
         }
         
-        var isTell = chatLogItem.Code == TELL_CHAT_RECEIVING_CHANNEL;
+        var isTell = chatLogItem.Code == TellChatReceivingChannel;
 
         if (chatLogItem.Line.StartsWith(CurrentCharacter.CharacterName) && !chatLogItem.Line.Contains("FORCEEXEC"))
         {

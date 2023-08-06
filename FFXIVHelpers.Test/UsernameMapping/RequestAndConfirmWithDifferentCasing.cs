@@ -10,7 +10,7 @@ public class RequestAndConfirmWithDifferentCasing
     
     private readonly Character _requestingCharacter = new("Re'Questing Name", "World");
     private readonly Character _requestingCharacterDifferentCasing = new("re'questing name", "world");
-    private const string DISCORD_REQUESTING_USERNAME = "Re'Questing";
+    private const string DiscordRequestingUsername = "Re'Questing";
 
     [Test]
     public void CanCreateMappingFromFFXIVFirstAndConfirmOnDiscord()
@@ -21,19 +21,19 @@ public class RequestAndConfirmWithDifferentCasing
         {
             Assert.Multiple(() =>
             {
-                Assert.That(mapping.ReceiveFromFFXIV(_requestingCharacter, DISCORD_REQUESTING_USERNAME), Is.False);
-                Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.Null);
+                Assert.That(mapping.ReceiveFromFFXIV(_requestingCharacter, DiscordRequestingUsername), Is.False);
+                Assert.That(mapping.GetMappingFromDiscordUsername(DiscordRequestingUsername), Is.Null);
                 Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.Null);
             });
         }
 
         {
-            mapping.ReceiveFromDiscord(_requestingCharacterDifferentCasing, DISCORD_REQUESTING_USERNAME, out var message);
+            mapping.ReceiveFromDiscord(_requestingCharacterDifferentCasing, DiscordRequestingUsername, out var message);
             Assert.Multiple(() =>
             {
                 Assert.That(string.IsNullOrEmpty(message), Is.False);
-                Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
-                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
+                Assert.That(mapping.GetMappingFromDiscordUsername(DiscordRequestingUsername), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DiscordRequestingUsername}"));
+                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DiscordRequestingUsername}"));
             });
         }
     }
@@ -45,11 +45,11 @@ public class RequestAndConfirmWithDifferentCasing
         mapping.SetHostingCharacter(_hostingCharacter);
 
         {
-            mapping.ReceiveFromDiscord(_requestingCharacter, DISCORD_REQUESTING_USERNAME, out var message);
+            mapping.ReceiveFromDiscord(_requestingCharacter, DiscordRequestingUsername, out var message);
             Assert.Multiple(() =>
             {
                 Assert.That(string.IsNullOrEmpty(message), Is.False);
-                Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.Null);
+                Assert.That(mapping.GetMappingFromDiscordUsername(DiscordRequestingUsername), Is.Null);
                 Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.Null);
             });
         }
@@ -57,9 +57,9 @@ public class RequestAndConfirmWithDifferentCasing
         {
             Assert.Multiple(() =>
             {
-                Assert.That(mapping.ReceiveFromFFXIV(_requestingCharacterDifferentCasing, DISCORD_REQUESTING_USERNAME), Is.True);
-                Assert.That(mapping.GetMappingFromDiscordUsername(DISCORD_REQUESTING_USERNAME), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
-                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DISCORD_REQUESTING_USERNAME}"));
+                Assert.That(mapping.ReceiveFromFFXIV(_requestingCharacterDifferentCasing, DiscordRequestingUsername), Is.True);
+                Assert.That(mapping.GetMappingFromDiscordUsername(DiscordRequestingUsername), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DiscordRequestingUsername}"));
+                Assert.That(mapping.GetMappingFromFFXIVUsername(_requestingCharacter), Is.EqualTo($"{_requestingCharacter.Format(CharacterNameDisplay.WithoutWorld)}/@{DiscordRequestingUsername}"));
             });
         }
     }

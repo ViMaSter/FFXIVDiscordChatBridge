@@ -3,6 +3,7 @@ using Discord.WebSocket;
 using FFXIVHelpers.Models;
 using FFXIVDiscordChatBridge.Producer;
 using FFXIVHelpers;
+using FFXIVHelpers.Extensions;
 using Microsoft.Extensions.Logging;
 using Timer = System.Threading.Timer;
 
@@ -13,30 +14,24 @@ public class Discord : IDiscordConsumer
     private readonly ILogger<Discord> _logger;
     private readonly IFFXIV _ffxivProducer;
     private readonly UsernameMapping _usernameMapping;
-    private readonly DiscordEmojiConverter _discordEmojiConverter;
+    private readonly DiscordMessageConverter _discordMessageConverter;
     private readonly IDiscordClientWrapper _discordWrapper;
     // ReSharper disable once NotAccessedField.Local - Required to manage lifetime
     private Timer? _displayNameRefreshTimer;
 
-    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping, DiscordEmojiConverter discordEmojiConverter)
+    public Discord(ILogger<Discord> logger, IDiscordClientWrapper discordWrapper, IFFXIV ffxivProducer, UsernameMapping usernameMapping, DiscordMessageConverter discordMessageConverter)
     {
         _logger = logger;
         _discordWrapper = discordWrapper;
         _ffxivProducer = ffxivProducer;
         _usernameMapping = usernameMapping;
-        _discordEmojiConverter = discordEmojiConverter;
-    }
-
-    private enum EventType
-    {
-        MessageSent,
-        MessageEdited
+        _discordMessageConverter = discordMessageConverter;
     }
 
     public Task Start()
     {
-        _discordWrapper.Client.MessageReceived += (message) => ClientOnMessageReceived(message, EventType.MessageSent);
-        _discordWrapper.Client.MessageUpdated += (_, socketMessage, _) => ClientOnMessageReceived(socketMessage, EventType.MessageEdited);
+        _discordWrapper.Client.MessageReceived += (message) => ClientOnMessageReceived(message, DiscordMessageConverter.EventType.MessageSent);
+        _discordWrapper.Client.MessageUpdated += (_, socketMessage, _) => ClientOnMessageReceived(socketMessage, DiscordMessageConverter.EventType.MessageEdited);
         
         if (_discordWrapper.Client.ConnectionState != ConnectionState.Connected)
         {
@@ -65,7 +60,7 @@ public class Discord : IDiscordConsumer
         return Task.CompletedTask;
     }
 
-    private Task ClientOnMessageReceived(SocketMessage socketMessage, EventType eventType)
+    private Task ClientOnMessageReceived(SocketMessage socketMessage, DiscordMessageConverter.EventType eventType)
     {
         if (socketMessage is not SocketUserMessage socketUserMessage)
         {
@@ -76,7 +71,7 @@ public class Discord : IDiscordConsumer
         return socketMessage.Channel switch
         {
             SocketDMChannel => HandleUsernameMapping(socketUserMessage),
-            SocketTextChannel => HandleFFXIVMessage(socketUserMessage, eventType),
+            SocketTextChannel => HandleChannelMessage(socketUserMessage, eventType),
             _ => Task.CompletedTask
         };
     }
@@ -101,14 +96,14 @@ public class Discord : IDiscordConsumer
         socketMessage.Author.SendMessageAsync(message).Wait();
         return Task.CompletedTask;
     }
-
-    private Task HandleFFXIVMessage(SocketUserMessage socketMessage, EventType eventType)
+    
+    private Task HandleChannelMessage(SocketUserMessage socketMessage, DiscordMessageConverter.EventType eventType)
     {
         if (socketMessage.Author.Id == _discordWrapper.Client.CurrentUser.Id)
         {
             return Task.CompletedTask;
         }
-        
+
         if (socketMessage.Channel.Id != _discordWrapper.Channel!.Id)
         {
             return Task.CompletedTask;
@@ -119,81 +114,19 @@ public class Discord : IDiscordConsumer
             return Task.CompletedTask;
         }
         
-        var fullMessage = socketMessage.Content;
-        
-        foreach (var socketMessageTag in socketMessage.Tags)
-        {
-            switch (socketMessageTag.Type)
-            {
-                case TagType.Emoji:
-                    if (socketMessageTag.Value is not Emote e)
-                    {
-                        continue;
-                    }
+        var fullMessage = _discordMessageConverter.ToFFXIVCompatible(socketMessage, eventType);
 
-                    fullMessage = fullMessage.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $":{e.Name}:");
-                    break;
-                case TagType.UserMention:
-                    if (socketMessageTag.Value is not SocketGuildUser u)
-                    {
-                        continue;
-                    }
-
-                    fullMessage = fullMessage.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"@{u.Nickname}");
-                    break;
-                case TagType.ChannelMention:
-                    break;
-                case TagType.RoleMention:
-                    if (socketMessageTag.Value is not SocketRole r)
-                    {
-                        continue;
-                    }
-                    fullMessage = fullMessage.Remove(socketMessageTag.Index, socketMessageTag.Length).Insert(socketMessageTag.Index, $"@{r.Name}");
-                    break;
-                case TagType.EveryoneMention:
-                    break;
-                
-                case TagType.HereMention:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        fullMessage = fullMessage.ReplaceLineEndings();
-        fullMessage = _discordEmojiConverter.ReplaceEmoji(fullMessage);
-
-        var userDisplayName = _usernameMapping.GetMappingFromDiscordUsername(guildUser.Username) ?? guildUser.DisplayName;
-
-        _logger.LogInformation("Received message from Discord ({EventType}): {FullMessage}", fullMessage, eventType);
-        foreach (var line in fullMessage.Split(Environment.NewLine))
+        // send each line to FFXIV
+        foreach (var line in fullMessage.Trim().Split(Environment.NewLine))
         {
             if (string.IsNullOrEmpty(line.Trim()))
             {
                 continue;
             }
-            
-            var optionalEditSuffix = eventType == EventType.MessageEdited ? " (edit)" : "";
-            
-            var formattedMessage = $"[{userDisplayName}{optionalEditSuffix}]: {line}";
 
-            _ffxivProducer.Send(formattedMessage).Wait();
-        }
-
-        foreach (var attachment in socketMessage.Attachments)
-        {
-            var formattedMessage = $"{userDisplayName} sent an attachment: '{attachment.Filename}'     ";
-
-            _ffxivProducer.Send(formattedMessage).Wait();
+            _ffxivProducer.Send(line).Wait();
         }
         
-        foreach (var socketMessageSticker in socketMessage.Stickers)
-        {
-            var formattedMessage = $"{userDisplayName} sent a '{socketMessageSticker.Name}' sticker: https://media.discordapp.net/stickers/{socketMessageSticker.Id}.webp     ";
-
-            _ffxivProducer.Send(formattedMessage).Wait();
-        }
-
         return Task.CompletedTask;
     }
 }

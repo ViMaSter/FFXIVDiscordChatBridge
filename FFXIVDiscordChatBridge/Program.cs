@@ -1,5 +1,6 @@
 using FFXIVDiscordChatBridge.Extensions;
 using FFXIVHelpers;
+using FFXIVHelpers.Extensions;
 using FFXIVHelpers.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,19 @@ namespace FFXIVDiscordChatBridge
             };
             AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
             {
+                if (e.Exception is IOException && e.Exception.InnerException is System.Net.Sockets.SocketException)
+                {
+                    Logger.Warn(e.Exception, "known socket excepsion: {Exception}");
+                    return;
+                }
+                
                 Logger.Error(e.Exception);
+                Environment.Exit(2);
+            };
+            TaskScheduler.UnobservedTaskException += (_, e) =>
+            {
+                Logger.Error(e.Exception);
+                Environment.Exit(3);
             };
 
             Logger.Info("Starting FFXIVDiscordChatBridge");
@@ -41,9 +54,11 @@ namespace FFXIVDiscordChatBridge
             });
 
             services.AddSingleton<DiscordEmojiConverter>();
+            services.AddSingleton<DiscordMessageConverter>();
+            
             services.AddSingleton<IPersistence, FilePersistence>();
             
-            services.AddSingleton<Producer.IDiscordClientWrapper, Producer.DiscordClientWrapper>();
+            services.AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>();
             
             services.AddSingleton<Producer.IFFXIV, Producer.FFXIV>();
             services.AddSingleton<Producer.IDiscord, Producer.Discord>();

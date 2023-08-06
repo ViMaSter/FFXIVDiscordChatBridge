@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-namespace FFXIVDiscordChatBridge.Extensions;
+namespace FFXIVHelpers.Extensions;
 
-internal static class DiscordLogSeverityExtensions
+public static class DiscordLogSeverityExtensions
 {
     public static LogLevel ToNLogSeverity(this Discord.LogSeverity discordLogSeverity)
     {

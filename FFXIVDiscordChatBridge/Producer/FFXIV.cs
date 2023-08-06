@@ -36,7 +36,7 @@ public class FFXIV : IFFXIV
         _logger.LogInformation("Sending message to FFXIV: {Message}", message);
         _inputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         _inputSimulator.Keyboard.Sleep(300);
-        _inputSimulator.Keyboard.TextEntry(message + "   "); // add a few spaces to prevent the message from being cut off at low frame rates
+        _inputSimulator.Keyboard.TextEntry(message + "     "); // add a few spaces to prevent the message from being cut off at low frame rates
         _inputSimulator.Keyboard.Sleep(600);
         _inputSimulator.Keyboard.KeyPress(VirtualKeyCode.RETURN);
         _inputSimulator.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
