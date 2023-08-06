@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.2.1"></a>
+## [2.2.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.2.1) (2023-8-6)
+
+### Bug Fixes
+
+* Exit app on fatal errors ([252931b](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/252931b335e07cd7e2c738ab43d0cbc9060c0472))
+* Uses fallback Discord Avatar URL for FFXIV players without lodestone avatar ([afcb4e3](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/afcb4e3a404cf1b0950abf6aa32a447c0e7a291b))
+
 <a name="2.2.0"></a>
 ## [2.2.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.2.0) (2023-7-31)
 
