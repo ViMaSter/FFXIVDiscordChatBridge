@@ -29,7 +29,7 @@ public class DiscordMessageConverterTests
             
             if (!withReply)
             {
-                var expected = $"{string.Join(Environment.NewLine, expectedWrittenContent.Split(Environment.NewLine).Select(line => $"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim();
+                var expected = $"{string.Join(Environment.NewLine, expectedWrittenContent.ReplaceLineEndings().Split(Environment.NewLine).Select(line => $"[{UserDisplayName}]: {line}"))}{Environment.NewLine}{expectedGeneratedContent}".Trim();
                 Assert.That(actual, Is.EqualTo(expected));
                 return;
             }
