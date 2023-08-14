@@ -76,7 +76,7 @@ public class Discord : IDiscordConsumer
         switch (socketReaction.Emote)
         {
             case Emote:
-                _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {socketReaction.Emote.Name}").Wait();
+                _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with :{socketReaction.Emote.Name}:").Wait();
                 return Task.CompletedTask;
             case Emoji:
                 _ffxivProducer.Send($"[{fromUserDisplayName}] reacted to [{toUserDisplayName}]'s message with {_discordEmojiConverter.ReplaceEmoji(socketReaction.Emote.Name)}").Wait();
