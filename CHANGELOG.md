@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.4.1"></a>
+## [2.4.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.4.1) (2023-8-14)
+
+### Bug Fixes
+
+* Emote reactions sent to FFXIV are wrapped with : for server-specific emoji ([61d2e14](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/61d2e14def4a358097a80b3036815ac5d773f427))
+
+### Other
+
+* **deps:** Bump Discord.Net in /FFXIVDiscordChatBridge ([541867e](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/541867ed012bb14c1bd9af58fc07c9a130d53554))
+* **deps:** Bump Microsoft.Extensions.Http.Polly ([89169dc](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/89169dc7ac2568894c2fd20e4e3706ba2c915558))
+* **deps:** Bump NLog from 5.2.2 to 5.2.3 in /FFXIVDiscordChatBridge ([a3c7609](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/a3c7609a1af6637ef3a5041352ba2f5832a849ad))
+* **deps:** Bump NLog.Extensions.Logging in /FFXIVDiscordChatBridge ([660c5bc](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/660c5bc4e08ec645119f0e7954d58a37a50b7117))
+
 <a name="2.4.0"></a>
 ## [2.4.0](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.4.0) (2023-8-6)
 
