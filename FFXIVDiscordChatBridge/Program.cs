@@ -1,3 +1,4 @@
+using Discord.WebSocket;
 using FFXIVDiscordChatBridge.Extensions;
 using FFXIVHelpers;
 using FFXIVHelpers.Extensions;
@@ -74,9 +75,9 @@ namespace FFXIVDiscordChatBridge
             var configuration = serviceProvider.GetService<IConfiguration>()!;
             
             var pulsewayReporter = new PulsewayReporter(
-                configuration["pulsewayUsername"] ?? throw new Exception("pulsewayUsername not found"),
-                configuration["pulsewayPassword"] ?? throw new Exception("pulsewayPassword not found"),
-                configuration["pulsewayInstanceID"] ?? throw new Exception("pulsewayInstanceID not found")
+                configuration["pulsewayUsername"],
+                configuration["pulsewayPassword"],
+                configuration["pulsewayInstanceID"]
             );
             
             AppDomain.CurrentDomain.UnhandledException += (_, e) =>
@@ -87,12 +88,16 @@ namespace FFXIVDiscordChatBridge
             };
             AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
             {
-                if (e.Exception is IOException && e.Exception.InnerException is System.Net.Sockets.SocketException)
+                switch (e.Exception)
                 {
-                    Logger.Warn(e.Exception, "known socket excepsion: {Exception}");
-                    return;
+                    case IOException when e.Exception.InnerException is System.Net.Sockets.SocketException:
+                        Logger.Warn(e.Exception, "known socket exception: {Exception}");
+                        return;
+                    case GatewayReconnectException:
+                        Logger.Warn(e.Exception, "known gateway reconnect exception: {Exception}");
+                        return;
                 }
-                
+
                 pulsewayReporter.SendMessage("FFXIV - First Chance Exception", e.Exception.ToString(), PulsewayReporter.Priority.Critical);
                 Logger.Fatal(e.Exception);
                 Environment.Exit(2);

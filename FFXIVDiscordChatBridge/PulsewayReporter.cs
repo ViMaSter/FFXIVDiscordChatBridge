@@ -36,6 +36,11 @@ class PulsewayReporter
 
     public void SendMessage(string title, string message, Priority priority)
     {
+        if (string.IsNullOrEmpty(_instanceId))
+        {
+            return;
+        }
+        
         var response = _client.PostAsync(ENDPOINT + "notifications", new StringContent(JsonConvert.SerializeObject(new NotifyRequest
         {
             title = title,
