@@ -2,6 +2,7 @@ using FFXIVDiscordChatBridge.Extensions;
 using FFXIVHelpers;
 using FFXIVHelpers.Extensions;
 using FFXIVHelpers.Persistence;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -19,28 +20,6 @@ namespace FFXIVDiscordChatBridge
         [STAThread]
         private static async Task Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-            {
-                Logger.Fatal(e.ExceptionObject);
-                Environment.Exit(1);
-            };
-            AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
-            {
-                if (e.Exception is IOException && e.Exception.InnerException is System.Net.Sockets.SocketException)
-                {
-                    Logger.Warn(e.Exception, "known socket excepsion: {Exception}");
-                    return;
-                }
-                
-                Logger.Error(e.Exception);
-                Environment.Exit(2);
-            };
-            TaskScheduler.UnobservedTaskException += (_, e) =>
-            {
-                Logger.Error(e.Exception);
-                Environment.Exit(3);
-            };
-
             Logger.Info("Starting FFXIVDiscordChatBridge");
             
             var services = new ServiceCollection();
@@ -52,6 +31,8 @@ namespace FFXIVDiscordChatBridge
                 loggingBuilder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                 loggingBuilder.AddNLog();
             });
+            
+            SetupPulsewayExceptionHandling(services.BuildServiceProvider());
 
             services.AddSingleton<DiscordEmojiConverter>();
             services.AddSingleton<DiscordMessageConverter>();
@@ -86,6 +67,42 @@ namespace FFXIVDiscordChatBridge
             var startup = ActivatorUtilities.CreateInstance<Startup>(serviceProvider);
             
             await Task.Delay(-1);
+        }
+
+        private static void SetupPulsewayExceptionHandling(ServiceProvider serviceProvider)
+        {
+            var configuration = serviceProvider.GetService<IConfiguration>()!;
+            
+            var pulsewayReporter = new PulsewayReporter(
+                configuration["pulsewayUsername"] ?? throw new Exception("pulsewayUsername not found"),
+                configuration["pulsewayPassword"] ?? throw new Exception("pulsewayPassword not found"),
+                configuration["pulsewayInstanceID"] ?? throw new Exception("pulsewayInstanceID not found")
+            );
+            
+            AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            {
+                pulsewayReporter.SendMessage("FFXIV - Unhandled Exception", e.ExceptionObject.ToString()!, PulsewayReporter.Priority.Critical);
+                Logger.Fatal(e.ExceptionObject);
+                Environment.Exit(1);
+            };
+            AppDomain.CurrentDomain.FirstChanceException += (_, e) =>
+            {
+                if (e.Exception is IOException && e.Exception.InnerException is System.Net.Sockets.SocketException)
+                {
+                    Logger.Warn(e.Exception, "known socket excepsion: {Exception}");
+                    return;
+                }
+                
+                pulsewayReporter.SendMessage("FFXIV - First Chance Exception", e.Exception.ToString(), PulsewayReporter.Priority.Critical);
+                Logger.Fatal(e.Exception);
+                Environment.Exit(2);
+            };
+            TaskScheduler.UnobservedTaskException += (_, e) =>
+            {
+                pulsewayReporter.SendMessage("FFXIV - Unobserved Task Exception", e.Exception.ToString(), PulsewayReporter.Priority.Critical);
+                Logger.Error(e.Exception);
+                Environment.Exit(3);
+            };
         }
     }
 }
