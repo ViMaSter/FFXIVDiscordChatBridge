@@ -20,8 +20,6 @@ namespace FFXIVDiscordChatBridge
         [STAThread]
         private static async Task Main()
         {
-            Logger.Info("Starting FFXIVDiscordChatBridge");
-            
             var services = new ServiceCollection();
             services.AddCommandLineConfiguration();
 
@@ -33,6 +31,8 @@ namespace FFXIVDiscordChatBridge
             });
             
             SetupPulsewayExceptionHandling(services.BuildServiceProvider());
+
+            Logger.Info("Starting FFXIVDiscordChatBridge");
 
             services.AddSingleton<DiscordEmojiConverter>();
             services.AddSingleton<DiscordMessageConverter>();
