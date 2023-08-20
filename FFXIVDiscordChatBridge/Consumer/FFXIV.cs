@@ -171,6 +171,11 @@ public partial class FFXIV : IDisposable, IFFXIVConsumer
     {
         while (true)
         {
+            if (!NativeWindowHelper.IsShowingNoError(_memoryHandler!.Configuration.ProcessModel.Process.Id))
+            {
+                throw new Exception("More than one Window titled 'FINAL FANTASY XIV' found; considering the game stopped or crashed");
+            }
+            
             var chatLog = ReadChatLog();
 
             if (chatLog == null || chatLog.IsEmpty)
