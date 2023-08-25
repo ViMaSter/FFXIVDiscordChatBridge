@@ -96,6 +96,19 @@ namespace FFXIVDiscordChatBridge
                     case GatewayReconnectException:
                         Logger.Warn(e.Exception, "known gateway reconnect exception: {Exception}");
                         return;
+                    case TaskCanceledException:
+                        Logger.Warn(e.Exception, "known exception: {Exception}");
+                        return;
+                    case Discord.Net.HttpException httpException:
+                        if (httpException.Errors.First().Errors.First().Code == "10008")
+                        {
+                            Logger.Warn(e.Exception, "known exception: {Exception}");
+                            return;
+                        }
+                        break;
+                    case System.Net.WebSockets.WebSocketException:
+                        Logger.Warn(e.Exception, "known exception: {Exception}");
+                        return;
                 }
 
                 pulsewayReporter.SendMessage("FFXIV - First Chance Exception", e.Exception.ToString(), PulsewayReporter.Priority.Critical);
