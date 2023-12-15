@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.4.2"></a>
+## [2.4.2](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.4.2) (2023-12-15)
+
+### Bug Fixes
+
+* Changes test result artifact name to be unique ([3dafe4a](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/3dafe4a675fc791120d9f9359e6701d9082cbec1))
+
+### Other
+
+* **deps:** Bump actions/checkout from 3 to 4 ([c971c5f](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/c971c5f44e0e87d2cd3d3a1de6bd180b8bf84482))
+* **deps:** Bump actions/download-artifact from 3 to 4 ([a377edd](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/a377edd154397eed7ac289339fcfc303ebc80440))
+* **deps:** Bump actions/setup-dotnet from 3 to 4 ([9d5859e](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/9d5859eb75a320470c2456b6ff4cf82b0f6e5eb0))
+* **deps:** Bump actions/upload-artifact from 3 to 4 ([a9a7767](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/a9a77672a0407c71b2650bfb4f03bcd36e849dec))
+* **deps:** Bump Discord.Net in /FFXIVDiscordChatBridge ([1a6b8cc](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/1a6b8cc95bf0d8611022efe8aa4666c71278a3c4))
+* **deps:** Bump Microsoft.Extensions.Configuration ([a47934d](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/a47934d5e8d53932223bece3353d5487a145c5a9))
+* **deps:** Bump Microsoft.Extensions.DependencyInjection ([6071d4d](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/6071d4dc79a7d6925c3bcc3bdbaa8fc7d44f8142))
+* **deps:** Bump Microsoft.Extensions.DependencyInjection.Abstractions ([57a0091](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/57a009171ffdb14253e3a20d037fcc747d5b3ce5))
+* **deps:** Bump Microsoft.Extensions.Http.Polly ([b696490](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/b6964903a36c3632428f266ed725da0d3352f1b9))
+* **deps:** Bump Microsoft.Extensions.Http.Polly ([5f4492e](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/5f4492e3121adffae430f3f52732415aff7a071c))
+* **deps:** Bump Microsoft.Extensions.Http.Polly ([b07242c](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/b07242ca0661527af8f3d342cca9f35e723f7694))
+* **deps:** Bump Microsoft.Extensions.Http.Polly ([7f067c5](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/7f067c5eea76d2c0bc2eb4cb1cc246899ec090db))
+* **deps:** Bump Microsoft.Extensions.Logging ([d7ff55b](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/d7ff55b1279651e422c4a41a9594e7ec2c4e73d1))
+* **deps:** Bump NLog from 5.2.3 to 5.2.4 in /FFXIVDiscordChatBridge ([90bce28](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/90bce283228e24ba7aee78d93b8ea78d6b2fdccd))
+* **deps:** Bump NLog from 5.2.4 to 5.2.5 in /FFXIVDiscordChatBridge ([e0f67eb](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/e0f67eb9b9d60dd280bd2d80a9f2fe632abbccd1))
+* **deps:** Bump NLog from 5.2.5 to 5.2.6 in /FFXIVDiscordChatBridge ([1682465](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/1682465cdada0edfc986331d09ba10da7e922694))
+* **deps:** Bump NLog from 5.2.6 to 5.2.7 in /FFXIVDiscordChatBridge ([f3fb1c9](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/f3fb1c940e03238a7b1fd482d524d62f983c7855))
+* **deps:** Bump NLog.Extensions.Logging in /FFXIVDiscordChatBridge ([9be1862](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/9be18629cac1fd579ca7941423b30feddf90af45))
+* **deps:** Bump NLog.Extensions.Logging in /FFXIVDiscordChatBridge ([6a118c7](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/6a118c7100b34880acd1c0c8ebbb224940113602))
+* **deps:** Bump NLog.Extensions.Logging in /FFXIVDiscordChatBridge ([dbe595f](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/commit/dbe595f77d2a25962d71c6d0a0eb650fade0025f))
+
 <a name="2.4.1"></a>
 ## [2.4.1](https://www.github.com/ViMaSter/FFXIVDiscordChatBridge/releases/tag/v2.4.1) (2023-8-14)
 
