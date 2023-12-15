@@ -48,7 +48,7 @@ jobs:
     - name: Upload dotnet test results
       uses: actions/upload-artifact@v4
       with:
-        name: testresults-unit
+        name: testresults-unit-${{ matrix.os }}
         path: app/test-results
         if-no-files-found: error
       if: ${{ always() }}
