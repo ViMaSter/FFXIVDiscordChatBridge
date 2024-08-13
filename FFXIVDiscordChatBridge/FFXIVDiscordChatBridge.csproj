@@ -20,7 +20,7 @@
       <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.7" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
       <PackageReference Include="NLog" Version="5.3.3" />
-      <PackageReference Include="NLog.Extensions.Logging" Version="5.3.11" />
+      <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
       <PackageReference Include="Sharlayan" Version="8.0.1" />
     </ItemGroup>
 
