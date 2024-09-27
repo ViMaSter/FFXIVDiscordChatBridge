@@ -20,6 +20,7 @@ You need:
        - the latest version [Final Fantasy XIV](https://freetrial.finalfantasyxiv.com)
        - the latest release of [this app](https://github.com/ViMaSter/FFXIVDiscordChatBridge/releases) extracted into any directory  
          Replace future occurrences of `<appDirectory>` with this directory.
+  - a Pulseway account [**with 2FA disabled**](https://forum.pulseway.com/topic/4645-operation-refused-as-the-account-has-2fa-enabled-options/#comment-15874)
   
 ## Configuration
 1. [Create a Discord application with "Bot" functionality](https://discord.com/developers/applications)
@@ -43,9 +44,14 @@ You need:
 10. Run FFXIV using DirectX11 on Windows (DirectX9 and other platforms are not supported) in windowed mode
 11. Note down which world your bot is on  
     Replace future occurrences of `<ffxivWorldName>` with this world name
-12. Run the following command:
+12. [Fetch all systems for your Pulseway account](https://api.pulseway.com/#get-all-systems) and note down the `identifier` of the system you want to use  
+    Replace future occurrences of `<pulsewayInstanceID>` with this identifier
+13. Run the following command:
    ```ps
        <appDirectory>/discord-chat-bridge.exe \
+           --pulsewayUsername=<pulsewayUsername> \
+           --pulsewayPassword=<pulsewayPassword> \
+           --pulsewayInstanceID=<pulsewayInstanceID> \
            --discordWebhookURL=<discordWebhookURL> \
            --discordChannelID=<discordChannelID> \
            --discordToken=<discordToken> \
